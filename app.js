@@ -223,7 +223,7 @@ async function handleGameOver(score) {
 
   const nombre = getPlayerName();
   if (nombre && window.UACupApi) {
-    window.UACupApi.actualizarRecord(nombre, score.goles, score.duracion_ms).catch(() => {});
+    window.UACupApi.guardarPuntaje(nombre, score.goles, score.duracion_ms).catch(() => {});
   }
 }
 
@@ -257,6 +257,14 @@ async function onRegisterSubmit(e) {
     setPlayerName(nombre);
     $('#register-modal')?.close();
     if (error) error.classList.add('hidden');
+
+    try {
+      const rows = await window.UACupApi.fetchLeaderboard();
+      renderLeaderboard(rows);
+    } catch {
+      /* fetchLeaderboard ya registra el error en consola */
+    }
+
     startGame();
   } catch {
     shakeRegisterForm();

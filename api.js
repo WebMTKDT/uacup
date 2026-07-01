@@ -58,21 +58,23 @@ async function obtenerRecordJugador(nombre) {
   return data;
 }
 
-async function actualizarRecord(nombre, goles, duracion_ms) {
+async function guardarPuntaje(nombre, goles, duracion) {
   if (!supabaseClient) return;
 
   const actual = await obtenerRecordJugador(nombre);
 
-  if (actual && !esMejorRecord(goles, duracion_ms, actual.goles, actual.duracion_ms)) {
+  if (actual && !esMejorRecord(goles, duracion, actual.goles, actual.duracion_ms)) {
     return;
   }
 
-  const { error } = await supabaseClient
+  const payload = { nombre_jugador: nombre, goles, duracion_ms: duracion };
+  console.log('Intentando guardar:', { nombre, goles, duracion });
+
+  const { data, error } = await supabaseClient
     .from('leaderboard')
-    .upsert(
-      { nombre_jugador: nombre, goles, duracion_ms },
-      { onConflict: 'nombre_jugador' }
-    );
+    .upsert(payload, { onConflict: 'nombre_jugador' });
+
+  console.log('Resultado de inserción:', { data, error });
 
   if (error) throw error;
 }
@@ -88,6 +90,8 @@ async function fetchLeaderboard() {
     .order('created_at', { ascending: true })
     .limit(10);
 
+  console.log('Resultado de lectura:', { data, error });
+
   if (error) throw error;
   return data || [];
 }
@@ -96,6 +100,6 @@ window.UACupApi = {
   initApi,
   nombreJugadorExiste,
   registrarJugador,
-  actualizarRecord,
+  guardarPuntaje,
   fetchLeaderboard
 };
