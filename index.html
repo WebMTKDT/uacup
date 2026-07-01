@@ -60,6 +60,7 @@
         <p class="end-time-label">Logrado en: <span id="end-tiempo" class="end-tiempo" data-end-tiempo>0.0</span> segundos</p>
         <div class="end-actions">
           <button type="button" id="btn-play-again" class="btn btn--primary">Play Again</button>
+          <button type="button" id="btn-home" class="btn btn--secondary">Volver al Inicio</button>
           <button type="button" id="btn-end-leaderboard" class="btn btn--secondary">Ver Tabla de Posiciones</button>
           <button type="button" id="btn-share" class="btn btn--secondary">Share</button>
         </div>
@@ -69,7 +70,7 @@
     <!-- ═══ Modal: Registro Top 10 ═══ -->
     <dialog id="register-modal" class="modal" aria-labelledby="register-title">
       <form id="register-form" class="modal-panel" method="dialog">
-        <h2 id="register-title" class="modal-title">¡Estás en el Top 10! Ingresa un nombre de usuario único</h2>
+        <h2 id="register-title" class="modal-title">Ingresa tu nombre de jugador</h2>
         <input
           type="text"
           id="register-username"
@@ -82,7 +83,7 @@
           required
         />
         <p id="register-error" class="register-error hidden" role="alert">
-          Este usuario ya existe. Por favor, elige otro
+          Este usuario ya está registrado.
         </p>
         <button type="submit" class="btn btn--primary">Guardar récord</button>
       </form>
@@ -119,6 +120,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="api.js"></script>
   <script src="app.js"></script>
   <script src="main.js"></script>
 </body>

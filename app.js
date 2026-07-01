@@ -1,16 +1,15 @@
 /**
- * UA Cup — Shell de UI, navegación y Supabase (GDD §6–§8)
+ * UA Cup — Shell de UI, navegación y flujo de registro (GDD §6–§8)
  */
 
 const RECORD_LOCAL_KEY = 'uacup_record_local';
+const PLAYER_NAME_KEY = 'uacup_player_name';
 const GAME_OVER_PAUSE_MS = 1200;
 
 const SUPABASE_URL = window.UACUP_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = window.UACUP_SUPABASE_ANON_KEY || '';
 
-let supabaseClient = null;
 let muted = false;
-let pendingScore = null;
 let validatedPlayerName = '';
 
 const $ = (sel) => document.querySelector(sel);
@@ -18,6 +17,24 @@ const $ = (sel) => document.querySelector(sel);
 function initSupabase() {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !window.supabase) return null;
   return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
+function getPlayerName() {
+  if (validatedPlayerName) return validatedPlayerName;
+  try {
+    return localStorage.getItem(PLAYER_NAME_KEY) || '';
+  } catch {
+    return '';
+  }
+}
+
+function setPlayerName(nombre) {
+  validatedPlayerName = nombre;
+  try {
+    localStorage.setItem(PLAYER_NAME_KEY, nombre);
+  } catch {
+    /* almacenamiento no disponible */
+  }
 }
 
 function getLocalRecord() {
@@ -65,6 +82,25 @@ function startGame() {
   if (window.UACup) window.UACup.iniciarJuego();
 }
 
+function onJugarClick() {
+  if (!getPlayerName()) {
+    openRegisterModal();
+    return;
+  }
+  startGame();
+}
+
+function goHomeFromEnd() {
+  const endScreen = $('#end-screen');
+  if (endScreen) {
+    endScreen.classList.add('hidden');
+    endScreen.classList.remove('visible', 'slide-in');
+    endScreen.setAttribute('aria-hidden', 'true');
+  }
+  if (window.UACup) window.UACup.pausarJuego();
+  showScreen('boot-screen');
+}
+
 function exitToMenu() {
   if (window.UACup) window.UACup.pausarJuego();
   const endScreen = $('#end-screen');
@@ -83,13 +119,14 @@ function showEndScreen(data) {
   const golesEl = $('#end-goles');
   const tiempoEl = $('#end-tiempo');
   const nameEl = $('#end-player-name');
+  const nombre = getPlayerName();
 
   if (golesEl) golesEl.textContent = String(data.goles);
   if (tiempoEl) tiempoEl.textContent = (data.duracion_ms / 1000).toFixed(1);
 
   if (nameEl) {
-    if (validatedPlayerName) {
-      nameEl.textContent = validatedPlayerName;
+    if (nombre) {
+      nameEl.textContent = nombre;
       nameEl.classList.remove('hidden');
       nameEl.setAttribute('aria-hidden', 'false');
     } else {
@@ -110,21 +147,6 @@ function showEndScreen(data) {
 
 function formatLeaderboardTime(ms) {
   return `${(ms / 1000).toFixed(1)}s`;
-}
-
-async function fetchLeaderboard() {
-  if (!supabaseClient) return [];
-
-  const { data, error } = await supabaseClient
-    .from('leaderboard')
-    .select('nombre_jugador, goles, duracion_ms, created_at')
-    .order('goles', { ascending: false })
-    .order('duracion_ms', { ascending: true })
-    .order('created_at', { ascending: true })
-    .limit(10);
-
-  if (error) throw error;
-  return data || [];
 }
 
 function renderLeaderboard(rows) {
@@ -165,52 +187,12 @@ async function openLeaderboard() {
   modal.showModal();
 
   try {
-    const rows = await fetchLeaderboard();
+    const rows = await window.UACupApi.fetchLeaderboard();
     renderLeaderboard(rows);
   } catch {
     if (tbody) {
       tbody.innerHTML = '<tr><td colspan="4" class="leaderboard-empty">No se pudo cargar el ranking.</td></tr>';
     }
-  }
-}
-
-async function getTenthPlace() {
-  if (!supabaseClient) return null;
-  const rows = await fetchLeaderboard();
-  return rows.length >= 10 ? rows[9] : null;
-}
-
-function qualifiesForTop10(score, tenth) {
-  if (!tenth) return score.goles > 0;
-  if (score.goles > tenth.goles) return true;
-  if (score.goles < tenth.goles) return false;
-  return score.duracion_ms <= tenth.duracion_ms;
-}
-
-async function submitScore(nombre, score) {
-  if (!supabaseClient) return { ok: true };
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 3000);
-
-  try {
-    const { error } = await supabaseClient
-      .from('leaderboard')
-      .insert({
-        nombre_jugador: nombre,
-        goles: score.goles,
-        duracion_ms: score.duracion_ms
-      });
-
-    clearTimeout(timeout);
-    if (error) {
-      if (error.code === '23505') return { ok: false, duplicate: true };
-      return { ok: false, duplicate: false };
-    }
-    return { ok: true };
-  } catch {
-    clearTimeout(timeout);
-    return { ok: false, duplicate: false };
   }
 }
 
@@ -229,58 +211,56 @@ function openRegisterModal() {
   if (input) input.focus();
 }
 
-async function handleGameOver(score) {
-  pendingScore = score;
-  validatedPlayerName = '';
-
-  try {
-    const tenth = await getTenthPlace();
-    if (qualifiesForTop10(score, tenth)) {
-      openRegisterModal();
-      return;
-    }
-  } catch {
-    /* Sin conexión: mostrar resultados sin registro */
-  }
-
-  await trySilentSubmit();
-  showEndScreen(score);
+function shakeRegisterForm() {
+  const form = $('#register-form');
+  if (!form) return;
+  form.classList.add('register-form-shake');
+  setTimeout(() => form.classList.remove('register-form-shake'), 500);
 }
 
-async function trySilentSubmit() {
-  if (!pendingScore || !supabaseClient) return;
-  await submitScore('Anónimo', pendingScore).catch(() => {});
+async function handleGameOver(score) {
+  showEndScreen(score);
+
+  const nombre = getPlayerName();
+  if (nombre && window.UACupApi) {
+    window.UACupApi.actualizarRecord(nombre, score.goles, score.duracion_ms).catch(() => {});
+  }
 }
 
 async function onRegisterSubmit(e) {
   e.preventDefault();
-  const form = $('#register-form');
   const input = $('#register-username');
   const error = $('#register-error');
-  if (!input || !pendingScore) return;
+  if (!input) return;
 
   const nombre = input.value.trim();
   if (!/^[A-Za-z0-9]{1,12}$/.test(nombre)) {
-    if (form) form.classList.add('register-form-shake');
-    setTimeout(() => form?.classList.remove('register-form-shake'), 500);
+    shakeRegisterForm();
     return;
   }
 
-  const result = await submitScore(nombre, pendingScore);
-
-  if (result.duplicate) {
-    if (error) error.classList.remove('hidden');
-    if (form) {
-      form.classList.add('register-form-shake');
-      setTimeout(() => form.classList.remove('register-form-shake'), 500);
+  try {
+    const existe = await window.UACupApi.nombreJugadorExiste(nombre);
+    if (existe) {
+      if (error) error.classList.remove('hidden');
+      shakeRegisterForm();
+      return;
     }
-    return;
-  }
 
-  validatedPlayerName = nombre;
-  $('#register-modal')?.close();
-  if (error) error.classList.add('hidden');
-  showEndScreen(pendingScore);
+    const result = await window.UACupApi.registrarJugador(nombre);
+    if (!result.ok) {
+      if (result.duplicate && error) error.classList.remove('hidden');
+      shakeRegisterForm();
+      return;
+    }
+
+    setPlayerName(nombre);
+    $('#register-modal')?.close();
+    if (error) error.classList.add('hidden');
+    startGame();
+  } catch {
+    shakeRegisterForm();
+  }
 }
 
 function shareScore() {
@@ -296,13 +276,14 @@ function shareScore() {
 }
 
 function bindUI() {
-  $('#btn-jugar')?.addEventListener('click', startGame);
+  $('#btn-jugar')?.addEventListener('click', onJugarClick);
 
   $('#btn-leaderboard')?.addEventListener('click', openLeaderboard);
   $('#btn-end-leaderboard')?.addEventListener('click', openLeaderboard);
   $('#btn-close-leaderboard')?.addEventListener('click', () => $('#leaderboard-modal')?.close());
 
   $('#btn-close-game')?.addEventListener('click', exitToMenu);
+  $('#btn-home')?.addEventListener('click', goHomeFromEnd);
 
   $('#btn-mute')?.addEventListener('click', (e) => {
     muted = !muted;
@@ -326,7 +307,9 @@ function bindUI() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  supabaseClient = initSupabase();
+  const client = initSupabase();
+  if (window.UACupApi) window.UACupApi.initApi(client);
+  validatedPlayerName = getPlayerName();
   updateRecordHUD();
   bindUI();
 

@@ -442,25 +442,6 @@ function triggerGameOver() {
 }
 
 function mostrarPantallaFinal() {
-  const endScreen = document.getElementById('end-screen');
-  if (!endScreen) return;
-
-  const golesEl =
-    endScreen.querySelector('[data-end-goles]') ||
-    endScreen.querySelector('#end-goles') ||
-    endScreen.querySelector('.end-goles');
-
-  const tiempoEl =
-    endScreen.querySelector('[data-end-tiempo]') ||
-    endScreen.querySelector('#end-tiempo') ||
-    endScreen.querySelector('.end-tiempo');
-
-  if (golesEl) golesEl.textContent = String(racha);
-  if (tiempoEl) {
-    const segundos = (duracionTotal / 1000).toFixed(1);
-    tiempoEl.textContent = segundos;
-  }
-
   if (typeof window.onUACupGameOver === 'function') {
     window.onUACupGameOver({ goles: racha, duracion_ms: duracionTotal });
   }
