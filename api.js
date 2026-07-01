@@ -8,12 +8,6 @@ function initApi(client) {
   supabaseClient = client;
 }
 
-function esMejorRecord(nuevosGoles, nuevaDuracion, golesActuales, duracionActual) {
-  if (nuevosGoles > golesActuales) return true;
-  if (nuevosGoles < golesActuales) return false;
-  return nuevaDuracion < duracionActual;
-}
-
 async function nombreJugadorExiste(nombre) {
   if (!supabaseClient) return false;
 
@@ -30,6 +24,8 @@ async function nombreJugadorExiste(nombre) {
 async function registrarJugador(nombre) {
   if (!supabaseClient) return { ok: true };
 
+  nombre = nombre.trim();
+
   const { error } = await supabaseClient
     .from('leaderboard')
     .insert({
@@ -45,38 +41,21 @@ async function registrarJugador(nombre) {
   return { ok: true };
 }
 
-async function obtenerRecordJugador(nombre) {
-  if (!supabaseClient) return null;
+async function guardarPuntaje(nombre, goles, duracion) {
+  if (!supabaseClient) return;
 
-  const { data, error } = await supabaseClient
+  const { data: actual } = await supabaseClient
     .from('leaderboard')
     .select('goles, duracion_ms')
     .eq('nombre_jugador', nombre)
     .maybeSingle();
 
-  if (error) throw error;
-  return data;
-}
-
-async function guardarPuntaje(nombre, goles, duracion) {
-  if (!supabaseClient) return;
-
-  const actual = await obtenerRecordJugador(nombre);
-
-  if (actual && !esMejorRecord(goles, duracion, actual.goles, actual.duracion_ms)) {
-    return;
+  if (!actual || (goles > actual.goles || (goles === actual.goles && duracion < actual.duracion_ms))) {
+    const { error } = await supabaseClient
+      .from('leaderboard')
+      .upsert({ nombre_jugador: nombre, goles: goles, duracion_ms: duracion }, { onConflict: 'nombre_jugador' });
+    if (error) console.error('Error al guardar:', error);
   }
-
-  const payload = { nombre_jugador: nombre, goles, duracion_ms: duracion };
-  console.log('Intentando guardar:', { nombre, goles, duracion });
-
-  const { data, error } = await supabaseClient
-    .from('leaderboard')
-    .upsert(payload, { onConflict: 'nombre_jugador' });
-
-  console.log('Resultado de inserción:', { data, error });
-
-  if (error) throw error;
 }
 
 async function fetchLeaderboard() {
@@ -90,9 +69,8 @@ async function fetchLeaderboard() {
     .order('created_at', { ascending: true })
     .limit(10);
 
-  console.log('Resultado de lectura:', { data, error });
-
   if (error) throw error;
+  console.log('Leaderboard crudo:', data);
   return data || [];
 }
 
