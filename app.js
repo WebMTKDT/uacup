@@ -143,6 +143,8 @@ function renderLeaderboard(rows) {
   const tbody = $('#leaderboard-body');
   if (!tbody) return;
 
+  tbody.innerHTML = '';
+
   if (!rows.length) {
     tbody.innerHTML = '<tr><td colspan="4" class="leaderboard-empty">Sin registros aún.</td></tr>';
     return;

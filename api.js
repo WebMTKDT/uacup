@@ -66,10 +66,9 @@ async function fetchLeaderboard() {
 
   const { data, error } = await supabaseClient
     .from('leaderboard')
-    .select('*')
+    .select('nombre_jugador, goles, duracion_ms, created_at')
     .order('goles', { ascending: false })
     .order('duracion_ms', { ascending: true })
-    .order('created_at', { ascending: true })
     .limit(10);
 
   if (error) throw error;
