@@ -3,7 +3,7 @@
  */
 
 const RECORD_LOCAL_KEY = 'uacup_record_local';
-const PLAYER_NAME_KEY = 'uacup_player_name';
+const PLAYER_NAME_KEY = 'uacup_nombre';
 const GAME_OVER_PAUSE_MS = 1200;
 
 const SUPABASE_URL = window.UACUP_SUPABASE_URL || '';
@@ -88,17 +88,6 @@ function onJugarClick() {
     return;
   }
   startGame();
-}
-
-function goHomeFromEnd() {
-  const endScreen = $('#end-screen');
-  if (endScreen) {
-    endScreen.classList.add('hidden');
-    endScreen.classList.remove('visible', 'slide-in');
-    endScreen.setAttribute('aria-hidden', 'true');
-  }
-  if (window.UACup) window.UACup.pausarJuego();
-  showScreen('boot-screen');
 }
 
 function exitToMenu() {
@@ -220,11 +209,6 @@ function shakeRegisterForm() {
 
 async function handleGameOver(score) {
   showEndScreen(score);
-
-  const nombre = getPlayerName();
-  if (nombre && window.UACupApi) {
-    window.UACupApi.guardarPuntaje(nombre, score.goles, score.duracion_ms).catch(() => {});
-  }
 }
 
 async function onRegisterSubmit(e) {
@@ -291,7 +275,7 @@ function bindUI() {
   $('#btn-close-leaderboard')?.addEventListener('click', () => $('#leaderboard-modal')?.close());
 
   $('#btn-close-game')?.addEventListener('click', exitToMenu);
-  $('#btn-home')?.addEventListener('click', goHomeFromEnd);
+  $('#btn-home')?.addEventListener('click', exitToMenu);
 
   $('#btn-mute')?.addEventListener('click', (e) => {
     muted = !muted;
@@ -316,7 +300,10 @@ function bindUI() {
 
 document.addEventListener('DOMContentLoaded', () => {
   const client = initSupabase();
-  if (window.UACupApi) window.UACupApi.initApi(client);
+  if (window.UACupApi) {
+    window.UACupApi.initApi(client);
+    console.log('DEBUG: UACupApi inicializada globalmente');
+  }
   validatedPlayerName = getPlayerName();
   updateRecordHUD();
   bindUI();

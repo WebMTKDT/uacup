@@ -425,7 +425,7 @@ function triggerGol() {
   actualizarMarcadorUI();
 }
 
-function triggerGameOver() {
+async function triggerGameOver() {
   if (estadoJuego === 'GAMEOVER') return;
 
   estadoJuego = 'GAMEOVER';
@@ -436,6 +436,15 @@ function triggerGameOver() {
     duracionTotal = Date.now() - tiempoInicio;
   } else {
     duracionTotal = 0;
+  }
+
+  const finalScore = { goles: racha, duracion_ms: duracionTotal };
+
+  const nombre = localStorage.getItem('uacup_nombre');
+  if (nombre && window.UACupApi) {
+    console.log('DEBUG: Iniciando guardado automático para', nombre);
+    await window.UACupApi.guardarPuntaje(nombre, finalScore.goles, finalScore.duracion_ms);
+    console.log('DEBUG: Guardado completado.');
   }
 
   mostrarPantallaFinal();
