@@ -496,12 +496,8 @@ function mostrarPantallaFinal() {
   if (golesEl) golesEl.textContent = String(racha);
   if (tiempoEl) {
     const segundos = (duracionTotal / 1000).toFixed(1);
-    tiempoEl.textContent = `${segundos}s`;
+    tiempoEl.textContent = segundos;
   }
-
-  endScreen.classList.remove('hidden');
-  endScreen.classList.add('visible');
-  endScreen.setAttribute('aria-hidden', 'false');
 
   if (typeof window.onUACupGameOver === 'function') {
     window.onUACupGameOver({ goles: racha, duracion_ms: duracionTotal });
@@ -725,11 +721,6 @@ window.UACup = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-  const playBtn = document.getElementById('btn-jugar') || document.getElementById('btn-play');
-  if (playBtn) {
-    playBtn.addEventListener('click', iniciarJuego);
-  }
-
   if (document.getElementById('gameCanvas') && document.body.dataset.autoStart === 'true') {
     iniciarJuego();
   }

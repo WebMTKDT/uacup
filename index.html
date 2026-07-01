@@ -1,9 +1,125 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>UA Cup</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="description" content="UA Cup — Penaltis de muerte súbita. Anota en tiempo récord." />
+  <title>UA Cup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <h1>El juego se está construyendo...</h1>
+
+  <div id="app" class="app">
+
+    <!-- ═══ A. Pantalla de Inicio (Boot Screen) ═══ -->
+    <section id="boot-screen" class="screen screen--active" aria-label="Pantalla de inicio">
+      <div class="boot-bg" aria-hidden="true"></div>
+      <div class="boot-content">
+        <h1 class="boot-title">UA Cup</h1>
+        <p class="boot-subtitle">Muerte Súbita: Un fallo y estás fuera. ¡Anota en tiempo récord!</p>
+        <div class="boot-actions">
+          <button type="button" id="btn-jugar" class="btn btn--primary">Jugar</button>
+          <button type="button" id="btn-leaderboard" class="btn btn--secondary">Ver Tabla de Posiciones</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ B. Interfaz Activa (In-Game) ═══ -->
+    <section id="game-screen" class="screen" aria-label="Partida en curso" hidden>
+      <header class="game-hud">
+        <div class="hud-block hud-block--left">
+          <p class="hud-label">Goles: <span id="hud-racha" data-hud-racha>0</span></p>
+          <p class="hud-record">Récord Local: <span id="hud-record">0</span></p>
+        </div>
+        <div class="hud-block hud-block--center">
+          <span id="hud-timer" class="hud-timer" data-hud-timer>00:00.0</span>
+        </div>
+        <div class="hud-block hud-block--right">
+          <button type="button" id="btn-mute" class="hud-icon-btn" aria-label="Silenciar sonido" aria-pressed="false">🔊</button>
+          <button type="button" id="btn-close-game" class="hud-icon-btn" aria-label="Salir al menú">✕</button>
+        </div>
+      </header>
+
+      <div id="game-container" class="game-container">
+        <canvas id="gameCanvas" aria-label="Campo de penaltis"></canvas>
+        <p id="intro-message" class="intro-message" aria-live="polite">
+          Muerte Súbita: Un fallo y estás fuera. ¡Anota en tiempo récord!
+        </p>
+      </div>
+    </section>
+
+    <!-- ═══ C. Pantalla de Resultados ═══ -->
+    <section id="end-screen" class="screen end-screen hidden" aria-label="Resultados" aria-hidden="true">
+      <div class="end-panel">
+        <p id="end-player-name" class="end-player-name hidden" aria-hidden="true"></p>
+        <p class="end-goles-label">Goles</p>
+        <p id="end-goles" class="end-goles" data-end-goles>0</p>
+        <p class="end-time-label">Logrado en: <span id="end-tiempo" class="end-tiempo" data-end-tiempo>0.0</span> segundos</p>
+        <div class="end-actions">
+          <button type="button" id="btn-play-again" class="btn btn--primary">Play Again</button>
+          <button type="button" id="btn-end-leaderboard" class="btn btn--secondary">Ver Tabla de Posiciones</button>
+          <button type="button" id="btn-share" class="btn btn--secondary">Share</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Modal: Registro Top 10 ═══ -->
+    <dialog id="register-modal" class="modal" aria-labelledby="register-title">
+      <form id="register-form" class="modal-panel" method="dialog">
+        <h2 id="register-title" class="modal-title">¡Estás en el Top 10! Ingresa un nombre de usuario único</h2>
+        <input
+          type="text"
+          id="register-username"
+          class="register-input"
+          maxlength="12"
+          pattern="[A-Za-z0-9]{1,12}"
+          autocomplete="username"
+          inputmode="text"
+          placeholder="Usuario (máx. 12)"
+          required
+        />
+        <p id="register-error" class="register-error hidden" role="alert">
+          Este usuario ya existe. Por favor, elige otro
+        </p>
+        <button type="submit" class="btn btn--primary">Guardar récord</button>
+      </form>
+    </dialog>
+
+    <!-- ═══ Modal: Tabla de Posiciones ═══ -->
+    <dialog id="leaderboard-modal" class="modal modal--wide" aria-labelledby="leaderboard-title">
+      <div class="modal-panel">
+        <div class="modal-header">
+          <h2 id="leaderboard-title" class="modal-title">Tabla de Posiciones</h2>
+          <button type="button" id="btn-close-leaderboard" class="modal-close" aria-label="Cerrar">✕</button>
+        </div>
+        <div class="leaderboard-wrap">
+          <table class="leaderboard-table">
+            <thead>
+              <tr>
+                <th>Puesto</th>
+                <th>Jugador</th>
+                <th>Goles ↓</th>
+                <th>Tiempo ↑</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-body">
+              <tr><td colspan="4" class="leaderboard-empty">Cargando ranking…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="leaderboard-footer">
+          Desempate: Mayor cantidad de goles &gt; Menor tiempo de ejecución &gt; Primer registro.
+        </p>
+      </div>
+    </dialog>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>
