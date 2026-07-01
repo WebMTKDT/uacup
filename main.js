@@ -252,8 +252,8 @@ function onPointerUp(e) {
   pointer.currentX = x;
   pointer.currentY = y;
 
-  const dx = pointer.startX - pointer.currentX;
-  const dy = pointer.startY - pointer.currentY;
+  const dx = pointer.currentX - pointer.startX;
+  const dy = pointer.currentY - pointer.startY;
   const magnitud = Math.hypot(dx, dy);
 
   pointer.activo = false;
@@ -345,25 +345,22 @@ function checkColisiones() {
   const ball = balonHitbox();
   const gk = porteroHitbox();
 
-  const posteIzq = {
-    x: GOAL_LEFT - POST_THICKNESS / 2,
-    y: GOAL_LINE_Y - CROSSBAR_THICKNESS,
-    w: POST_THICKNESS,
-    h: GK_BASE_Y + GK_HEIGHT - GOAL_LINE_Y + CROSSBAR_THICKNESS
-  };
+  // 1. Limites laterales e inferiores (Tiro desviado)
+  if (Balon.x - BALL_RADIUS < -50 || Balon.x + BALL_RADIUS > VIEWPORT.W + 50 || Balon.y > VIEWPORT.H + 100) {
+    triggerGameOver();
+    return;
+  }
 
-  const posteDer = {
-    x: GOAL_RIGHT - POST_THICKNESS / 2,
-    y: GOAL_LINE_Y - CROSSBAR_THICKNESS,
-    w: POST_THICKNESS,
-    h: GK_BASE_Y + GK_HEIGHT - GOAL_LINE_Y + CROSSBAR_THICKNESS
-  };
-
+  // 2. Colisión con el Portero
   if (aabbOverlap(ball.x, ball.y, ball.w, ball.h, gk.x, gk.y, gk.w, gk.h)) {
     Balon.tocoPortero = true;
     triggerGameOver();
     return;
   }
+
+  // 3. Colisión con los Postes
+  const posteIzq = { x: GOAL_LEFT - POST_THICKNESS / 2, y: GOAL_LINE_Y - CROSSBAR_THICKNESS, w: POST_THICKNESS, h: GK_BASE_Y + GK_HEIGHT - GOAL_LINE_Y + CROSSBAR_THICKNESS };
+  const posteDer = { x: GOAL_RIGHT - POST_THICKNESS / 2, y: GOAL_LINE_Y - CROSSBAR_THICKNESS, w: POST_THICKNESS, h: GK_BASE_Y + GK_HEIGHT - GOAL_LINE_Y + CROSSBAR_THICKNESS };
 
   const palos = [posteIzq, posteDer];
   for (const palo of palos) {
@@ -375,30 +372,14 @@ function checkColisiones() {
     }
   }
 
-  if (Balon.x - BALL_RADIUS < 0 || Balon.x + BALL_RADIUS > VIEWPORT.W) {
-    triggerGameOver();
+  // 4. Lógica de Gol (Cruzar la línea Y = 300)
+  if (Balon.y <= GOAL_LINE_Y) {
+    if (Balon.x > GOAL_LEFT + BALL_RADIUS && Balon.x < GOAL_RIGHT - BALL_RADIUS) {
+      triggerGol(); // Entró a la portería
+    } else {
+      triggerGameOver(); // Pasó la línea pero por fuera de los postes
+    }
     return;
-  }
-
-  if (Balon.y - BALL_RADIUS < 0) {
-    triggerGameOver();
-    return;
-  }
-
-  const cruzoLineaMeta =
-    Balon.y <= GOAL_LINE_Y &&
-    Balon.x > GOAL_LEFT + BALL_RADIUS &&
-    Balon.x < GOAL_RIGHT - BALL_RADIUS;
-
-  if (cruzoLineaMeta && !Balon.tocoPortero) {
-    triggerGol();
-    return;
-  }
-
-  const pasoLineaMeta = Balon.y + BALL_RADIUS < GOAL_LINE_Y;
-  const fueraAncho = Balon.x < GOAL_LEFT || Balon.x > GOAL_RIGHT;
-  if (pasoLineaMeta && fueraAncho) {
-    triggerGameOver();
   }
 }
 
@@ -431,7 +412,7 @@ function triggerGol() {
   Balon.enVuelo = false;
   Balon.vx = 0;
   Balon.vy = 0;
-  Balon.y = GOAL_LINE_Y + BALL_RADIUS + 8;
+  Balon.y = GOAL_LINE_Y - 40;
 
   racha += 1;
   porteroTiempoRecorrido *= DIFICULTAD_TIEMPO_FACTOR;
