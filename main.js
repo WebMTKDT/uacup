@@ -8,6 +8,8 @@
 // ═══════════════════════════════════════════
 
 const VIEWPORT = { W: 1080, H: 1920 };
+const VIEWPORT_ASPECT = VIEWPORT.W / VIEWPORT.H;
+const CANVAS_HEIGHT_RATIO = 0.90;
 const FRICTION = 0.98;
 const MIN_DRAG_PX = 50;
 const BALL_RADIUS = 42;
@@ -166,13 +168,30 @@ function porteroHitbox() {
 // CANVAS Y ESCALADO
 // ═══════════════════════════════════════════
 
+/** Ajusta el tamaño visual del canvas al 90 % de la altura visible del dispositivo. */
+function ajustarEscalaCanvas() {
+  if (!canvas) return;
+
+  const nuevaAltura = window.innerHeight * CANVAS_HEIGHT_RATIO;
+  const displayW = nuevaAltura * VIEWPORT_ASPECT;
+
+  canvas.style.height = `${nuevaAltura}px`;
+  canvas.style.width = `${displayW}px`;
+
+  const container = canvas.parentElement;
+  if (container) {
+    container.style.height = `${nuevaAltura}px`;
+    container.style.width = `${displayW}px`;
+    container.style.maxWidth = '100%';
+  }
+}
+
 function resizeCanvas() {
   if (!canvas) return;
 
   canvas.width = VIEWPORT.W;
   canvas.height = VIEWPORT.H;
-  canvas.style.width = '100%';
-  canvas.style.height = '100%';
+  ajustarEscalaCanvas();
 }
 
 // ═══════════════════════════════════════════
