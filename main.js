@@ -358,16 +358,15 @@ function checkColisiones() {
     return;
   }
 
-  // 3. Colisión con los Postes
+  // 3. Colisión con los Postes (cara interna = gol)
   const posteIzq = { x: GOAL_LEFT - POST_THICKNESS / 2, y: GOAL_LINE_Y - CROSSBAR_THICKNESS, w: POST_THICKNESS, h: GK_BASE_Y + GK_HEIGHT - GOAL_LINE_Y + CROSSBAR_THICKNESS };
   const posteDer = { x: GOAL_RIGHT - POST_THICKNESS / 2, y: GOAL_LINE_Y - CROSSBAR_THICKNESS, w: POST_THICKNESS, h: GK_BASE_Y + GK_HEIGHT - GOAL_LINE_Y + CROSSBAR_THICKNESS };
 
-  const palos = [posteIzq, posteDer];
-  for (const palo of palos) {
-    if (aabbOverlap(ball.x, ball.y, ball.w, ball.h, palo.x, palo.y, palo.w, palo.h)) {
-      Balon.tocoPalo = true;
-      rebotePalo(palo);
-      triggerGameOver();
+  if (aabbOverlap(ball.x, ball.y, ball.w, ball.h, posteIzq.x, posteIzq.y, posteIzq.w, posteIzq.h) ||
+      aabbOverlap(ball.x, ball.y, ball.w, ball.h, posteDer.x, posteDer.y, posteDer.w, posteDer.h)) {
+
+    if (Balon.y <= GOAL_LINE_Y + 50) {
+      triggerGol();
       return;
     }
   }
