@@ -169,22 +169,10 @@ function porteroHitbox() {
 function resizeCanvas() {
   if (!canvas) return;
 
-  const container = canvas.parentElement || canvas;
-  const rect = container.getBoundingClientRect();
-  const aspect = VIEWPORT.W / VIEWPORT.H;
-  let displayW = rect.width;
-  let displayH = rect.height;
-
-  if (displayW / displayH > aspect) {
-    displayW = displayH * aspect;
-  } else {
-    displayH = displayW / aspect;
-  }
-
-  canvas.style.width = `${displayW}px`;
-  canvas.style.height = `${displayH}px`;
   canvas.width = VIEWPORT.W;
   canvas.height = VIEWPORT.H;
+  canvas.style.width = '100%';
+  canvas.style.height = '100%';
 }
 
 // ═══════════════════════════════════════════
@@ -371,20 +359,13 @@ function checkColisiones() {
     h: GK_BASE_Y + GK_HEIGHT - GOAL_LINE_Y + CROSSBAR_THICKNESS
   };
 
-  const travesano = {
-    x: GOAL_LEFT - POST_THICKNESS / 2,
-    y: GOAL_LINE_Y - CROSSBAR_THICKNESS,
-    w: GOAL_RIGHT - GOAL_LEFT + POST_THICKNESS,
-    h: CROSSBAR_THICKNESS
-  };
-
   if (aabbOverlap(ball.x, ball.y, ball.w, ball.h, gk.x, gk.y, gk.w, gk.h)) {
     Balon.tocoPortero = true;
     triggerGameOver();
     return;
   }
 
-  const palos = [posteIzq, posteDer, travesano];
+  const palos = [posteIzq, posteDer];
   for (const palo of palos) {
     if (aabbOverlap(ball.x, ball.y, ball.w, ball.h, palo.x, palo.y, palo.w, palo.h)) {
       Balon.tocoPalo = true;
@@ -405,9 +386,9 @@ function checkColisiones() {
   }
 
   const cruzoLineaMeta =
-    Balon.y - BALL_RADIUS <= GOAL_LINE_Y &&
-    Balon.x > GOAL_LEFT &&
-    Balon.x < GOAL_RIGHT;
+    Balon.y <= GOAL_LINE_Y &&
+    Balon.x > GOAL_LEFT + BALL_RADIUS &&
+    Balon.x < GOAL_RIGHT - BALL_RADIUS;
 
   if (cruzoLineaMeta && !Balon.tocoPortero) {
     triggerGol();
