@@ -208,6 +208,18 @@ function shakeRegisterForm() {
 }
 
 async function handleGameOver(score) {
+  const nombre = getPlayerName();
+  if (nombre) {
+    console.log('DEBUG: Guardando puntaje final:', { nombre, ...score });
+    try {
+      await window.UACupApi.guardarPuntaje(nombre, score.goles, score.duracion_ms);
+      console.log('DEBUG: Guardado exitoso en Supabase');
+      const data = await window.UACupApi.fetchLeaderboard();
+      renderLeaderboard(data);
+    } catch (err) {
+      console.error('DEBUG: Error al guardar puntaje:', err);
+    }
+  }
   showEndScreen(score);
 }
 

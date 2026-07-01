@@ -44,6 +44,7 @@ async function registrarJugador(nombre) {
 async function guardarPuntaje(nombre, goles, duracion) {
   if (!supabaseClient) return;
 
+  console.log('DEBUG: Parámetros upsert:', { nombre, goles, duracion, validos: nombre !== undefined && goles !== undefined && duracion !== undefined });
   console.log('DEBUG: Enviando a Supabase:', { nombre_jugador: nombre, goles, duracion_ms: duracion });
 
   const { data, error } = await supabaseClient

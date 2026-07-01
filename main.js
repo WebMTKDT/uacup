@@ -440,19 +440,12 @@ async function triggerGameOver() {
 
   const finalScore = { goles: racha, duracion_ms: duracionTotal };
 
-  const nombre = localStorage.getItem('uacup_nombre');
-  if (nombre && window.UACupApi) {
-    console.log('DEBUG: Iniciando guardado automático para', nombre);
-    await window.UACupApi.guardarPuntaje(nombre, finalScore.goles, finalScore.duracion_ms);
-    console.log('DEBUG: Guardado completado.');
-  }
-
-  mostrarPantallaFinal();
+  mostrarPantallaFinal(finalScore);
 }
 
-function mostrarPantallaFinal() {
+function mostrarPantallaFinal(score) {
   if (typeof window.onUACupGameOver === 'function') {
-    window.onUACupGameOver({ goles: racha, duracion_ms: duracionTotal });
+    window.onUACupGameOver(score || { goles: racha, duracion_ms: duracionTotal });
   }
 }
 
