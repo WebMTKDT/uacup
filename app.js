@@ -6,17 +6,18 @@ const RECORD_LOCAL_KEY = 'uacup_record_local';
 const PLAYER_NAME_KEY = 'uacup_nombre';
 const GAME_OVER_PAUSE_MS = 1200;
 
-const SUPABASE_URL = window.UACUP_SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = window.UACUP_SUPABASE_ANON_KEY || '';
-
 let muted = false;
 let validatedPlayerName = '';
 
 const $ = (sel) => document.querySelector(sel);
 
 function initSupabase() {
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !window.supabase) return null;
-  return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const url = window.UACUP_SUPABASE_URL || '';
+  const key = window.UACUP_SUPABASE_ANON_KEY || '';
+  if (!url || !key || !window.supabase) return null;
+  const client = window.supabase.createClient(url, key);
+  console.log('Supabase inicializado con URL:', url);
+  return client;
 }
 
 function getPlayerName() {
