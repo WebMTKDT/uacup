@@ -44,17 +44,19 @@ async function registrarJugador(nombre) {
 async function guardarPuntaje(nombre, goles, duracion) {
   if (!supabaseClient) return;
 
-  const { data: actual } = await supabaseClient
-    .from('leaderboard')
-    .select('goles, duracion_ms')
-    .eq('nombre_jugador', nombre)
-    .maybeSingle();
+  console.log('DEBUG: Enviando a Supabase:', { nombre_jugador: nombre, goles, duracion_ms: duracion });
 
-  if (!actual || (goles > actual.goles || (goles === actual.goles && duracion < actual.duracion_ms))) {
-    const { error } = await supabaseClient
-      .from('leaderboard')
-      .upsert({ nombre_jugador: nombre, goles: goles, duracion_ms: duracion }, { onConflict: 'nombre_jugador' });
-    if (error) console.error('Error al guardar:', error);
+  const { data, error } = await supabaseClient
+    .from('leaderboard')
+    .upsert(
+      { nombre_jugador: nombre, goles: goles, duracion_ms: duracion },
+      { onConflict: 'nombre_jugador' }
+    );
+
+  if (error) {
+    console.error('ERROR CRÍTICO SUPABASE:', error);
+  } else {
+    console.log('ÉXITO: Datos confirmados en DB', data);
   }
 }
 
@@ -63,7 +65,7 @@ async function fetchLeaderboard() {
 
   const { data, error } = await supabaseClient
     .from('leaderboard')
-    .select('nombre_jugador, goles, duracion_ms, created_at')
+    .select('*')
     .order('goles', { ascending: false })
     .order('duracion_ms', { ascending: true })
     .order('created_at', { ascending: true })
