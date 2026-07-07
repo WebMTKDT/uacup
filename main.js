@@ -48,7 +48,8 @@ const GK_SPRITE_PATHS = {
   shiftR: 'assets/right-lateral-shift-max.png',
   diveL: 'assets/left-dive-max.png',
   diveR: 'assets/right-dive-max.png',
-  catch: 'assets/caught-ball-max.png'
+  catch: 'assets/caught-ball-max.png',
+  victory: 'assets/victory-pose-max.png'
 };
 
 const GkVisuals = {
@@ -429,7 +430,9 @@ function updateBalon(dt) {
 // ═══════════════════════════════════════════
 
 function determinarEstadoPortero() {
-  if (estadoJuego === 'GAMEOVER') return 'catch';
+  if (estadoJuego === 'GAMEOVER') {
+    return Balon.tocoPortero ? 'catch' : 'victory';
+  }
   if (estadoJuego === 'GOAL_PAUSE' || Portero.fase === 'idle') return 'idle';
 
   const margen = (Portero.maxX - Portero.minX) * 0.25;
@@ -607,6 +610,13 @@ async function triggerGameOver() {
     duracionTotal = Date.now() - tiempoInicio;
   } else {
     duracionTotal = 0;
+  }
+
+  const poseFinal = Balon.tocoPortero ? 'catch' : 'victory';
+  if (GkVisuals.currentState !== poseFinal) {
+    GkVisuals.previousState = GkVisuals.currentState;
+    GkVisuals.currentState = poseFinal;
+    GkVisuals.transitionAlpha = 0;
   }
 
   const finalScore = { goles: racha, duracion_ms: duracionTotal };
