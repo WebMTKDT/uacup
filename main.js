@@ -146,13 +146,40 @@ function loadImage(src) {
   });
 }
 
+/** Convierte fondo negro opaco a alpha real (JPEG disfrazado de PNG). */
+function loadPorteriaImage(src, darkThreshold = 45) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const off = document.createElement('canvas');
+      off.width = img.naturalWidth;
+      off.height = img.naturalHeight;
+      const octx = off.getContext('2d');
+      octx.drawImage(img, 0, 0);
+      const { data } = octx.getImageData(0, 0, off.width, off.height);
+      for (let i = 0; i < data.length; i += 4) {
+        if (data[i] <= darkThreshold && data[i + 1] <= darkThreshold && data[i + 2] <= darkThreshold) {
+          data[i + 3] = 0;
+        }
+      }
+      octx.putImageData(new ImageData(data, off.width, off.height), 0, 0);
+      const processed = new Image();
+      processed.onload = () => resolve(processed);
+      processed.onerror = reject;
+      processed.src = off.toDataURL('image/png');
+    };
+    img.onerror = () => reject(new Error(`No se pudo cargar: ${src}`));
+    img.src = src;
+  });
+}
+
 function preloadAssets() {
   if (assetsReady) return Promise.resolve();
   if (assetsLoadPromise) return assetsLoadPromise;
 
   assetsLoadPromise = Promise.all([
     loadImage(ASSET_PATHS.background).then((img) => { GameAssets.background = img; }),
-    loadImage(ASSET_PATHS.porteria).then((img) => { GameAssets.porteria = img; }),
+    loadPorteriaImage(ASSET_PATHS.porteria).then((img) => { GameAssets.porteria = img; }),
     loadImage(ASSET_PATHS.balon).then((img) => { GameAssets.balon = img; }),
     ...Object.entries(GK_SPRITE_PATHS).map(([key, src]) =>
       loadImage(src).then((img) => { GkVisuals.images[key] = img; })
@@ -625,6 +652,8 @@ function drawField() {
   if (GameAssets.porteria) {
     const goalW = GOAL_RIGHT - GOAL_LEFT + POST_THICKNESS;
     const goalH = GK_BASE_Y + GK_HEIGHT - GOAL_LINE_Y + CROSSBAR_THICKNESS;
+    ctx.save();
+    ctx.globalCompositeOperation = 'source-over';
     ctx.drawImage(
       GameAssets.porteria,
       GOAL_LEFT - POST_THICKNESS / 2,
@@ -632,6 +661,7 @@ function drawField() {
       goalW,
       goalH
     );
+    ctx.restore();
   }
 }
 
