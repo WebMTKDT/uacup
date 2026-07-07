@@ -42,23 +42,23 @@ async function registrarJugador(nombre) {
 }
 
 async function guardarPuntaje(nombre, goles, duracion) {
-  if (!supabaseClient) return;
+  if (!supabaseClient) {
+    console.warn('UA Cup: Supabase no configurado, puntaje no guardado');
+    return;
+  }
 
-  console.log('DEBUG: Parámetros upsert:', { nombre, goles, duracion, validos: nombre !== undefined && goles !== undefined && duracion !== undefined });
-  console.log('DEBUG: Enviando a Supabase:', { nombre_jugador: nombre, goles, duracion_ms: duracion });
+  console.log('Intentando guardar:', { nombre, goles, duracion });
 
   const { data, error } = await supabaseClient
     .from('leaderboard')
     .upsert(
-      { nombre_jugador: nombre, goles: goles, duracion_ms: duracion },
+      { nombre_jugador: nombre, goles, duracion_ms: duracion },
       { onConflict: 'nombre_jugador' }
     );
 
-  if (error) {
-    console.error('ERROR CRÍTICO SUPABASE:', error);
-  } else {
-    console.log('ÉXITO: Datos confirmados en DB', data);
-  }
+  console.log('Resultado de inserción:', { data, error });
+
+  if (error) throw error;
 }
 
 async function fetchLeaderboard() {

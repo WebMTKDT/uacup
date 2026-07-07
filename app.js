@@ -14,9 +14,16 @@ const $ = (sel) => document.querySelector(sel);
 function initSupabase() {
   const url = window.UACUP_SUPABASE_URL || '';
   const key = window.UACUP_SUPABASE_ANON_KEY || '';
-  if (!url || !key || !window.supabase) return null;
+  if (!url || !key) {
+    console.warn('UA Cup: faltan UACUP_SUPABASE_URL o UACUP_SUPABASE_ANON_KEY');
+    return null;
+  }
+  if (!window.supabase) {
+    console.warn('UA Cup: librería @supabase/supabase-js no cargada');
+    return null;
+  }
   const client = window.supabase.createClient(url, key);
-  console.log('Supabase inicializado con URL:', url);
+  console.log('UA Cup: Supabase inicializado con URL:', url);
   return client;
 }
 
@@ -92,7 +99,10 @@ function onJugarClick() {
 }
 
 function exitToMenu() {
-  if (window.UACup) window.UACup.pausarJuego();
+  if (window.UACup) {
+    window.UACup.pausarJuego();
+    window.UACup.resetPartida();
+  }
   const endScreen = $('#end-screen');
   if (endScreen) {
     endScreen.classList.add('hidden');
@@ -189,6 +199,8 @@ async function openLeaderboard() {
 }
 
 function openRegisterModal() {
+  if (window.UACup && window.UACup.estado === 'PLAYING') return;
+
   const modal = $('#register-modal');
   const input = $('#register-username');
   const error = $('#register-error');
@@ -211,19 +223,20 @@ function shakeRegisterForm() {
 }
 
 async function handleGameOver(score) {
-  const nombre = getPlayerName();
-  if (nombre) {
-    console.log('DEBUG: Guardando puntaje final:', { nombre, ...score });
-    try {
-      await window.UACupApi.guardarPuntaje(nombre, score.goles, score.duracion_ms);
-      console.log('DEBUG: Guardado exitoso en Supabase');
-      const data = await window.UACupApi.fetchLeaderboard();
-      renderLeaderboard(data);
-    } catch (err) {
-      console.error('DEBUG: Error al guardar puntaje:', err);
-    }
-  }
+  if (window.UACup && window.UACup.estado !== 'GAMEOVER') return;
+
   showEndScreen(score);
+
+  const nombre = getPlayerName();
+  if (!nombre || !window.UACupApi) return;
+
+  try {
+    await window.UACupApi.guardarPuntaje(nombre, score.goles, score.duracion_ms);
+    const rows = await window.UACupApi.fetchLeaderboard();
+    renderLeaderboard(rows);
+  } catch (err) {
+    console.error('UA Cup: error al guardar puntaje o actualizar ranking', err);
+  }
 }
 
 async function onRegisterSubmit(e) {
@@ -317,7 +330,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const client = initSupabase();
   if (window.UACupApi) {
     window.UACupApi.initApi(client);
-    console.log('DEBUG: UACupApi inicializada globalmente');
+    if (client) {
+      console.log('UA Cup: UACupApi conectada a Supabase');
+    } else {
+      console.warn('UA Cup: UACupApi sin cliente Supabase (modo offline)');
+    }
   }
   validatedPlayerName = getPlayerName();
   updateRecordHUD();

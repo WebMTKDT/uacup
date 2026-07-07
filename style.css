@@ -9,7 +9,7 @@
   --ua-muted: #9aa3b5;
   --ua-danger: #e74c3c;
   --viewport-ratio: 9 / 16;
-  --font-main: 'Oswald', 'Arial Narrow', sans-serif;
+  --font-main: 'Roboto', sans-serif;
 }
 
 *, *::before, *::after {
@@ -21,7 +21,8 @@ html, body {
   margin: 0;
   padding: 0;
   min-height: 100%;
-  font-family: var(--font-main);
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
   color: var(--ua-text);
   background: var(--ua-bg);
   overflow: hidden;

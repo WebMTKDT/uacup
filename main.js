@@ -36,6 +36,21 @@ const RESET_BALON_MS = 400;
 const FLOAT_PLUS_MS = 800;
 const FORCE_SCALE = 0.38;
 
+const ASSET_PATHS = {
+  background: 'assets/background-in-game.png',
+  porteria: 'assets/porteria-in-game.png',
+  balon: 'assets/balon.png'
+};
+
+const GameAssets = {
+  background: null,
+  porteria: null,
+  balon: null
+};
+
+let assetsReady = false;
+let assetsLoadPromise = null;
+
 // ═══════════════════════════════════════════
 // ESTADO GLOBAL
 // ═══════════════════════════════════════════
@@ -100,6 +115,41 @@ let goalResetTimer = 0;
 let floatPlusTimer = 0;
 let showFloatPlus = false;
 let primerDisparoHecho = false;
+
+// ═══════════════════════════════════════════
+// PRECARGA DE ASSETS
+// ═══════════════════════════════════════════
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`No se pudo cargar: ${src}`));
+    img.src = src;
+  });
+}
+
+function preloadAssets() {
+  if (assetsReady) return Promise.resolve();
+  if (assetsLoadPromise) return assetsLoadPromise;
+
+  assetsLoadPromise = Promise.all([
+    loadImage(ASSET_PATHS.background).then((img) => { GameAssets.background = img; }),
+    loadImage(ASSET_PATHS.porteria).then((img) => { GameAssets.porteria = img; }),
+    loadImage(ASSET_PATHS.balon).then((img) => { GameAssets.balon = img; })
+  ])
+    .then(() => {
+      assetsReady = true;
+      console.log('UA Cup: assets precargados correctamente');
+    })
+    .catch((err) => {
+      console.warn('UA Cup: error al precargar assets, usando fallback vectorial', err);
+      assetsReady = false;
+      assetsLoadPromise = null;
+    });
+
+  return assetsLoadPromise;
+}
 
 // ═══════════════════════════════════════════
 // UTILIDADES
@@ -505,30 +555,49 @@ function actualizarCronometroUI(elapsedMs) {
 // ═══════════════════════════════════════════
 
 function drawField() {
-  const grd = ctx.createLinearGradient(0, 0, 0, VIEWPORT.H);
-  grd.addColorStop(0, '#3d6b45');
-  grd.addColorStop(1, '#2f5a36');
-  ctx.fillStyle = grd;
-  ctx.fillRect(0, 0, VIEWPORT.W, VIEWPORT.H);
+  if (GameAssets.background) {
+    ctx.drawImage(GameAssets.background, 0, 0, VIEWPORT.W, VIEWPORT.H);
+  } else {
+    const grd = ctx.createLinearGradient(0, 0, 0, VIEWPORT.H);
+    grd.addColorStop(0, '#3d6b45');
+    grd.addColorStop(1, '#2f5a36');
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, VIEWPORT.W, VIEWPORT.H);
+  }
 
-  ctx.strokeStyle = 'rgba(255,255,255,0.35)';
-  ctx.lineWidth = 6;
-  ctx.strokeRect(80, VIEWPORT.H * 0.55, VIEWPORT.W - 160, VIEWPORT.H * 0.38);
+  if (GameAssets.porteria) {
+    const goalW = GOAL_RIGHT - GOAL_LEFT + POST_THICKNESS;
+    const goalH = GK_BASE_Y + GK_HEIGHT - GOAL_LINE_Y + CROSSBAR_THICKNESS;
+    ctx.drawImage(
+      GameAssets.porteria,
+      GOAL_LEFT - POST_THICKNESS / 2,
+      GOAL_LINE_Y - CROSSBAR_THICKNESS,
+      goalW,
+      goalH
+    );
+  }
+}
 
-  ctx.fillStyle = 'rgba(255,255,255,0.9)';
-  ctx.fillRect(GOAL_LEFT - POST_THICKNESS / 2, GOAL_LINE_Y - CROSSBAR_THICKNESS, POST_THICKNESS, GK_BASE_Y + GK_HEIGHT - GOAL_LINE_Y + CROSSBAR_THICKNESS);
-  ctx.fillRect(GOAL_RIGHT - POST_THICKNESS / 2, GOAL_LINE_Y - CROSSBAR_THICKNESS, POST_THICKNESS, GK_BASE_Y + GK_HEIGHT - GOAL_LINE_Y + CROSSBAR_THICKNESS);
-  ctx.fillRect(GOAL_LEFT - POST_THICKNESS / 2, GOAL_LINE_Y - CROSSBAR_THICKNESS, GOAL_RIGHT - GOAL_LEFT + POST_THICKNESS, CROSSBAR_THICKNESS);
-
-  ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.moveTo(GOAL_LEFT, GOAL_LINE_Y);
-  ctx.lineTo(GOAL_RIGHT, GOAL_LINE_Y);
-  ctx.stroke();
-
-  ctx.fillStyle = 'rgba(0,0,0,0.25)';
-  ctx.fillRect(GOAL_LEFT, GOAL_LINE_Y, GOAL_RIGHT - GOAL_LEFT, 120);
+function drawGoalFrame() {
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(
+    GOAL_LEFT - POST_THICKNESS / 2,
+    GOAL_LINE_Y - CROSSBAR_THICKNESS,
+    POST_THICKNESS,
+    GK_BASE_Y + GK_HEIGHT - GOAL_LINE_Y + CROSSBAR_THICKNESS
+  );
+  ctx.fillRect(
+    GOAL_RIGHT - POST_THICKNESS / 2,
+    GOAL_LINE_Y - CROSSBAR_THICKNESS,
+    POST_THICKNESS,
+    GK_BASE_Y + GK_HEIGHT - GOAL_LINE_Y + CROSSBAR_THICKNESS
+  );
+  ctx.fillRect(
+    GOAL_LEFT - POST_THICKNESS / 2,
+    GOAL_LINE_Y - CROSSBAR_THICKNESS,
+    GOAL_RIGHT - GOAL_LEFT + POST_THICKNESS,
+    CROSSBAR_THICKNESS
+  );
 }
 
 function drawPortero() {
@@ -541,6 +610,19 @@ function drawPortero() {
 }
 
 function drawBalon() {
+  const size = BALL_RADIUS * 2;
+
+  if (GameAssets.balon) {
+    ctx.drawImage(
+      GameAssets.balon,
+      Balon.x - BALL_RADIUS,
+      Balon.y - BALL_RADIUS,
+      size,
+      size
+    );
+    return;
+  }
+
   ctx.fillStyle = 'rgba(0,0,0,0.2)';
   ctx.beginPath();
   ctx.ellipse(Balon.x, Balon.y + BALL_RADIUS * 0.6, BALL_RADIUS * 0.85, BALL_RADIUS * 0.35, 0, 0, Math.PI * 2);
@@ -595,7 +677,7 @@ function drawFloatPlus() {
   ctx.save();
   ctx.globalAlpha = alpha;
   ctx.fillStyle = '#ec7700';
-  ctx.font = 'bold 96px Oswald, sans-serif';
+  ctx.font = '500 96px Roboto, sans-serif';
   ctx.textAlign = 'center';
   ctx.fillText('+1', VIEWPORT.W / 2, VIEWPORT.H * 0.42 - offsetY);
   ctx.restore();
@@ -606,6 +688,7 @@ function render() {
   drawField();
   drawPortero();
   drawBalon();
+  drawGoalFrame();
   drawAimLine();
   drawFloatPlus();
 }
@@ -673,10 +756,12 @@ function iniciarJuego() {
     canvas.dataset.pointerBound = '1';
   }
 
-  detenerBucle();
-  resetPartida();
-  estadoJuego = 'PLAYING';
-  animId = requestAnimationFrame(gameLoop);
+  preloadAssets().finally(() => {
+    detenerBucle();
+    resetPartida();
+    estadoJuego = 'PLAYING';
+    animId = requestAnimationFrame(gameLoop);
+  });
 }
 
 function pausarJuego() {
@@ -696,6 +781,7 @@ window.UACup = {
   pausarJuego,
   reanudarJuego,
   resetPartida,
+  preloadAssets,
   get estado() { return estadoJuego; },
   get racha() { return racha; },
   get duracionTotal() { return duracionTotal; },
@@ -703,6 +789,7 @@ window.UACup = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+  preloadAssets();
   if (document.getElementById('gameCanvas') && document.body.dataset.autoStart === 'true') {
     iniciarJuego();
   }
