@@ -60,15 +60,20 @@ html, body {
 /* ── Boot Screen ── */
 #boot-screen {
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   text-align: center;
-  padding: 2rem 1.5rem;
+  padding: 1.5rem 1.5rem calc(2.75rem + env(safe-area-inset-bottom, 0));
+  background: var(--ua-ui-gray);
 }
 
 .boot-bg {
   position: absolute;
   inset: 0;
-  background: url('assets/home-screen.png') center bottom / contain no-repeat;
+  background-color: var(--ua-ui-gray);
+  background-image: url('assets/home-screen.png');
+  background-position: center bottom;
+  background-size: contain;
+  background-repeat: no-repeat;
   z-index: 0;
 }
 
@@ -78,9 +83,11 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   width: 100%;
   max-width: 22rem;
+  flex: 1;
+  padding-bottom: 0.5rem;
 }
 
 .boot-actions {
@@ -89,11 +96,11 @@ html, body {
   align-items: center;
   gap: 0.85rem;
   width: 100%;
-  margin-top: 2rem;
 }
 
 #boot-screen .boot-actions .btn {
-  width: 85%;
+  width: 75%;
+  font-size: 1.5rem;
 }
 
 #boot-screen .btn--primary {
@@ -103,7 +110,7 @@ html, body {
 }
 
 #boot-screen .btn--primary:active {
-  background: #c76500;
+  background: #64656a;
 }
 
 #boot-screen .btn--secondary {
@@ -144,12 +151,17 @@ html, body {
   transition: transform 0.15s ease, background 0.15s ease;
 }
 
+.btn:hover,
+.btn:active {
+  background: #64656a;
+}
+
 .btn:active {
   transform: scale(0.97);
 }
 
 .btn--primary {
-  background: linear-gradient(180deg, var(--ua-accent) 0%, var(--ua-accent-dark) 100%);
+  background: #ec7700;
   color: #fff;
 }
 
@@ -161,6 +173,7 @@ html, body {
 /* ── HUD In-Game ── */
 #game-screen {
   background: var(--ua-field-green);
+  color: #fff;
 }
 
 .game-hud {
@@ -171,6 +184,7 @@ html, body {
   padding: 0.65rem 0.85rem;
   background: var(--ua-ui-gray);
   flex-shrink: 0;
+  color: #fff;
 }
 
 .hud-block {
@@ -193,17 +207,17 @@ html, body {
   margin: 0;
   font-size: 0.8rem;
   line-height: 1.35;
+  color: #fff;
 }
 
 .hud-record {
-  color: var(--ua-muted);
   font-size: 0.72rem;
 }
 
 .hud-timer {
   font-size: clamp(1.25rem, 5vw, 1.6rem);
   font-weight: 700;
-  color: var(--ua-accent);
+  color: #fff;
   letter-spacing: 0.05em;
 }
 
@@ -213,7 +227,7 @@ html, body {
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.08);
-  color: var(--ua-text);
+  color: #fff;
   font-size: 1rem;
   cursor: pointer;
   display: flex;
