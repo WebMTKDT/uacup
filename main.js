@@ -12,7 +12,7 @@ const VIEWPORT_ASPECT = VIEWPORT.W / VIEWPORT.H;
 const CANVAS_HEIGHT_RATIO = 0.90;
 const FRICTION = 0.98;
 const MIN_DRAG_PX = 50;
-const BALL_RADIUS = 42;
+const BALL_RADIUS = 50;
 const BALL_START_X = VIEWPORT.W / 2;
 const BALL_START_Y = VIEWPORT.H * 0.85;
 
@@ -38,7 +38,7 @@ const FORCE_SCALE = 0.38;
 
 const ASSET_PATHS = {
   background: 'assets/background-in-game.png',
-  porteria: 'assets/porteria-in-game.png',
+  porteria: 'assets/porteria-in-game_transparente.png',
   balon: 'assets/balon.png'
 };
 
@@ -559,7 +559,7 @@ function drawField() {
     ctx.drawImage(GameAssets.background, 0, 0, VIEWPORT.W, VIEWPORT.H);
   } else {
     const grd = ctx.createLinearGradient(0, 0, 0, VIEWPORT.H);
-    grd.addColorStop(0, '#3d6b45');
+    grd.addColorStop(0, '#1a4d1a');
     grd.addColorStop(1, '#2f5a36');
     ctx.fillStyle = grd;
     ctx.fillRect(0, 0, VIEWPORT.W, VIEWPORT.H);
@@ -576,28 +576,6 @@ function drawField() {
       goalH
     );
   }
-}
-
-function drawGoalFrame() {
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(
-    GOAL_LEFT - POST_THICKNESS / 2,
-    GOAL_LINE_Y - CROSSBAR_THICKNESS,
-    POST_THICKNESS,
-    GK_BASE_Y + GK_HEIGHT - GOAL_LINE_Y + CROSSBAR_THICKNESS
-  );
-  ctx.fillRect(
-    GOAL_RIGHT - POST_THICKNESS / 2,
-    GOAL_LINE_Y - CROSSBAR_THICKNESS,
-    POST_THICKNESS,
-    GK_BASE_Y + GK_HEIGHT - GOAL_LINE_Y + CROSSBAR_THICKNESS
-  );
-  ctx.fillRect(
-    GOAL_LEFT - POST_THICKNESS / 2,
-    GOAL_LINE_Y - CROSSBAR_THICKNESS,
-    GOAL_RIGHT - GOAL_LEFT + POST_THICKNESS,
-    CROSSBAR_THICKNESS
-  );
 }
 
 function drawPortero() {
@@ -688,7 +666,6 @@ function render() {
   drawField();
   drawPortero();
   drawBalon();
-  drawGoalFrame();
   drawAimLine();
   drawFloatPlus();
 }
