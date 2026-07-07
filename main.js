@@ -12,7 +12,7 @@ const VIEWPORT_ASPECT = VIEWPORT.W / VIEWPORT.H;
 const CANVAS_HEIGHT_RATIO = 0.90;
 const FRICTION = 0.98;
 const MIN_DRAG_PX = 50;
-const BALL_RADIUS = 50;
+const BALL_RADIUS = 65;
 const BALL_START_X = VIEWPORT.W / 2;
 const BALL_START_Y = VIEWPORT.H * 0.85;
 
@@ -559,8 +559,8 @@ function drawField() {
     ctx.drawImage(GameAssets.background, 0, 0, VIEWPORT.W, VIEWPORT.H);
   } else {
     const grd = ctx.createLinearGradient(0, 0, 0, VIEWPORT.H);
-    grd.addColorStop(0, '#1a4d1a');
-    grd.addColorStop(1, '#2f5a36');
+    grd.addColorStop(0, '#5cbc27');
+    grd.addColorStop(1, '#4da822');
     ctx.fillStyle = grd;
     ctx.fillRect(0, 0, VIEWPORT.W, VIEWPORT.H);
   }

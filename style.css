@@ -1,12 +1,14 @@
 /* UA Cup — Estilos según GDD */
 
 :root {
-  --ua-bg: #1a1f2e;
-  --ua-bg-soft: #252b3d;
+  --ua-field-green: #5cbc27;
+  --ua-field-green-dark: #4da822;
+  --ua-bg: #5cbc27;
+  --ua-bg-soft: #4da822;
   --ua-accent: #ec7700;
   --ua-accent-dark: #c76500;
   --ua-text: #f0f0f0;
-  --ua-muted: #9aa3b5;
+  --ua-muted: rgba(255, 255, 255, 0.75);
   --ua-danger: #e74c3c;
   --viewport-ratio: 9 / 16;
   --font-main: 'Roboto', sans-serif;
@@ -24,7 +26,7 @@ html, body {
   font-family: 'Roboto', sans-serif;
   font-weight: 500;
   color: var(--ua-text);
-  background: var(--ua-bg);
+  background: var(--ua-field-green);
   overflow: hidden;
   touch-action: manipulation;
 }
@@ -134,7 +136,7 @@ html, body {
 
 /* ── HUD In-Game ── */
 #game-screen {
-  background: linear-gradient(180deg, #3a3f4a 0%, #2c3038 40%, #1e2228 100%);
+  background: var(--ua-field-green);
 }
 
 .game-hud {
@@ -257,7 +259,7 @@ html, body {
 .end-screen {
   align-items: flex-end;
   justify-content: flex-end;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(92, 188, 39, 0.72);
   z-index: 20;
 }
 
@@ -268,7 +270,7 @@ html, body {
 .end-panel {
   width: 100%;
   padding: 2rem 1.5rem calc(2rem + env(safe-area-inset-bottom, 0));
-  background: var(--ua-bg-soft);
+  background: var(--ua-field-green-dark);
   border-radius: 20px 20px 0 0;
   text-align: center;
   transform: translateY(100%);
@@ -330,12 +332,12 @@ html, body {
 }
 
 .modal::backdrop {
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(92, 188, 39, 0.78);
 }
 
 .modal-panel {
-  background: var(--ua-bg-soft);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--ua-field-green-dark);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 14px;
   padding: 1.5rem;
   color: var(--ua-text);
@@ -371,9 +373,9 @@ html, body {
   padding: 0.75rem 1rem;
   font-family: var(--font-main);
   font-size: 1rem;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 8px;
-  background: var(--ua-bg);
+  background: rgba(0, 0, 0, 0.15);
   color: #fff;
 }
 
