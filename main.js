@@ -38,7 +38,7 @@ const FORCE_SCALE = 0.38;
 
 const ASSET_PATHS = {
   background: 'assets/background-in-game.png',
-  porteria: 'assets/porteria-in-game_transparente.png',
+  porteria: 'assets/porteria.png',
   balon: 'assets/balon.png'
 };
 

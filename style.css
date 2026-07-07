@@ -2,7 +2,8 @@
 
 :root {
   --ua-field-green: #2b7c08;
-  --ua-field-green-dark: #707070;
+  --ua-ui-gray: #707070;
+  --ua-ui-gray-dark: #5a5a5a;
   --ua-bg: #2b7c08;
   --ua-bg-soft: #707070;
   --ua-accent: #ec7700;
@@ -67,7 +68,7 @@ html, body {
 .boot-bg {
   position: absolute;
   inset: 0;
-  background: url('assets/home-screen.png') center bottom / cover no-repeat;
+  background: url('assets/home-screen.png') center bottom / contain no-repeat;
   z-index: 0;
 }
 
@@ -80,7 +81,6 @@ html, body {
   justify-content: center;
   width: 100%;
   max-width: 22rem;
-  min-height: 100%;
 }
 
 .boot-actions {
@@ -89,11 +89,11 @@ html, body {
   align-items: center;
   gap: 0.85rem;
   width: 100%;
-  margin-top: 10rem;
+  margin-top: 2rem;
 }
 
 #boot-screen .boot-actions .btn {
-  width: 70%;
+  width: 85%;
 }
 
 #boot-screen .btn--primary {
@@ -107,7 +107,7 @@ html, body {
 }
 
 #boot-screen .btn--secondary {
-  background: #707070;
+  background: var(--ua-ui-gray);
   border-color: rgba(255, 255, 255, 0.25);
   color: #fff;
 }
@@ -169,8 +169,7 @@ html, body {
   justify-content: space-between;
   gap: 0.5rem;
   padding: 0.65rem 0.85rem;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(6px);
+  background: var(--ua-ui-gray);
   flex-shrink: 0;
 }
 
@@ -250,7 +249,7 @@ html, body {
   width: 100%;
   height: 100%;
   touch-action: none;
-  border-radius: 8px;
+  border-radius: 0;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
@@ -283,7 +282,7 @@ html, body {
 .end-screen {
   align-items: flex-end;
   justify-content: flex-end;
-  background: rgba(43, 124, 8, 0.72);
+  background: rgba(112, 112, 112, 0.55);
   z-index: 20;
 }
 
@@ -294,7 +293,7 @@ html, body {
 .end-panel {
   width: 100%;
   padding: 2rem 1.5rem calc(2rem + env(safe-area-inset-bottom, 0));
-  background: var(--ua-field-green-dark);
+  background: var(--ua-ui-gray);
   border-radius: 20px 20px 0 0;
   text-align: center;
   transform: translateY(100%);
@@ -356,11 +355,11 @@ html, body {
 }
 
 .modal::backdrop {
-  background: rgba(43, 124, 8, 0.78);
+  background: rgba(112, 112, 112, 0.65);
 }
 
 .modal-panel {
-  background: var(--ua-field-green-dark);
+  background: var(--ua-ui-gray);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 14px;
   padding: 1.5rem;
@@ -399,7 +398,7 @@ html, body {
   font-size: 1rem;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 8px;
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.2);
   color: #fff;
 }
 
