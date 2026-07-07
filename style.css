@@ -67,7 +67,7 @@ html, body {
 .boot-bg {
   position: absolute;
   inset: 0;
-  background: linear-gradient(165deg, #2a3144 0%, #1a1f2e 50%, #12151c 100%);
+  background: url('assets/home-screen.png') center center / cover no-repeat;
   z-index: 0;
 }
 
@@ -77,8 +77,39 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2rem;
+  justify-content: center;
+  width: 100%;
   max-width: 22rem;
+  min-height: 100%;
+}
+
+.boot-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+  margin-top: 10rem;
+}
+
+#boot-screen .boot-actions .btn {
+  width: 70%;
+}
+
+#boot-screen .btn--primary {
+  background: #ec7700;
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+#boot-screen .btn--primary:active {
+  background: #c76500;
+}
+
+#boot-screen .btn--secondary {
+  background: #2b7c08;
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #fff;
 }
 
 .boot-title {
@@ -97,13 +128,6 @@ html, body {
   color: var(--ua-muted);
   line-height: 1.45;
   font-style: italic;
-}
-
-.boot-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-  width: 100%;
 }
 
 /* ── Botones ── */
