@@ -559,8 +559,8 @@ function drawField() {
     ctx.drawImage(GameAssets.background, 0, 0, VIEWPORT.W, VIEWPORT.H);
   } else {
     const grd = ctx.createLinearGradient(0, 0, 0, VIEWPORT.H);
-    grd.addColorStop(0, '#5cbc27');
-    grd.addColorStop(1, '#4da822');
+    grd.addColorStop(0, '#2b7c08');
+    grd.addColorStop(1, '#236606');
     ctx.fillStyle = grd;
     ctx.fillRect(0, 0, VIEWPORT.W, VIEWPORT.H);
   }

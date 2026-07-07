@@ -283,18 +283,6 @@ async function onRegisterSubmit(e) {
   }
 }
 
-function shareScore() {
-  const goles = $('#end-goles')?.textContent || '0';
-  const tiempo = $('#end-tiempo')?.textContent || '0';
-  const text = `¡Hice ${goles} goles en ${tiempo}s en UA Cup! Muerte súbita — ¿me superas?`;
-
-  if (navigator.share) {
-    navigator.share({ title: 'UA Cup', text }).catch(() => {});
-  } else if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).catch(() => {});
-  }
-}
-
 function bindUI() {
   $('#btn-jugar')?.addEventListener('click', onJugarClick);
 
@@ -316,8 +304,6 @@ function bindUI() {
     $('#end-screen')?.classList.remove('visible', 'slide-in');
     startGame();
   });
-
-  $('#btn-share')?.addEventListener('click', shareScore);
 
   $('#register-form')?.addEventListener('submit', onRegisterSubmit);
 
