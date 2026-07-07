@@ -2,10 +2,10 @@
 
 :root {
   --ua-field-green: #2b7c08;
-  --ua-ui-gray: #707070;
-  --ua-ui-gray-dark: #5a5a5a;
+  --ua-ui-gray: #64656a;
+  --ua-ui-gray-dark: #52535a;
   --ua-bg: #2b7c08;
-  --ua-bg-soft: #707070;
+  --ua-bg-soft: #64656a;
   --ua-accent: #ec7700;
   --ua-accent-dark: #0d0c0c;
   --ua-text: #f0f0f0;
@@ -99,8 +99,8 @@ html, body {
 }
 
 #boot-screen .boot-actions .btn {
-  width: 75%;
-  font-size: 1.5rem;
+  width: 67.5%;
+  font-size: 1.125rem;
 }
 
 #boot-screen .btn--primary {
@@ -110,7 +110,7 @@ html, body {
 }
 
 #boot-screen .btn--primary:active {
-  background: #64656a;
+  background: var(--ua-ui-gray-dark);
 }
 
 #boot-screen .btn--secondary {
@@ -140,20 +140,20 @@ html, body {
 /* ── Botones ── */
 .btn {
   font-family: var(--font-main);
-  font-size: 1.5rem;
+  font-size: 1.125rem;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   border: 2px solid rgba(255, 255, 255, 0.2);
   border-radius: 10px;
-  padding: 0.85rem 2rem;
+  padding: 0.63rem 1.35rem;
   cursor: pointer;
   transition: transform 0.15s ease, background 0.15s ease;
 }
 
 .btn:hover,
 .btn:active {
-  background: #64656a;
+  background: var(--ua-ui-gray-dark);
 }
 
 .btn:active {
@@ -296,7 +296,7 @@ html, body {
 .end-screen {
   align-items: flex-end;
   justify-content: flex-end;
-  background: rgba(112, 112, 112, 0.55);
+  background: rgba(100, 101, 106, 0.55);
   z-index: 20;
 }
 
@@ -369,7 +369,7 @@ html, body {
 }
 
 .modal::backdrop {
-  background: rgba(112, 112, 112, 0.65);
+  background: rgba(100, 101, 106, 0.65);
 }
 
 .modal-panel {
