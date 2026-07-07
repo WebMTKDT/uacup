@@ -2,11 +2,11 @@
 
 :root {
   --ua-field-green: #2b7c08;
-  --ua-field-green-dark: #236606;
+  --ua-field-green-dark: #707070;
   --ua-bg: #2b7c08;
-  --ua-bg-soft: #236606;
+  --ua-bg-soft: #707070;
   --ua-accent: #ec7700;
-  --ua-accent-dark: #c76500;
+  --ua-accent-dark: #0d0c0c;
   --ua-text: #f0f0f0;
   --ua-muted: rgba(255, 255, 255, 0.75);
   --ua-danger: #e74c3c;
@@ -35,7 +35,7 @@ html, body {
   position: relative;
   width: 100%;
   min-height: 100dvh;
-  max-width: 520px;
+  max-width: 6000px;
   margin: 0 auto;
   overflow: hidden;
 }
@@ -67,7 +67,7 @@ html, body {
 .boot-bg {
   position: absolute;
   inset: 0;
-  background: url('assets/home-screen.png') center center / cover no-repeat;
+  background: url('assets/home-screen.png') center bottom / cover no-repeat;
   z-index: 0;
 }
 
@@ -107,7 +107,7 @@ html, body {
 }
 
 #boot-screen .btn--secondary {
-  background: #2b7c08;
+  background: #707070;
   border-color: rgba(255, 255, 255, 0.25);
   color: #fff;
 }
@@ -133,13 +133,13 @@ html, body {
 /* ── Botones ── */
 .btn {
   font-family: var(--font-main);
-  font-size: 1.05rem;
+  font-size: 1.5rem;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   border: 2px solid rgba(255, 255, 255, 0.2);
   border-radius: 10px;
-  padding: 0.85rem 1.5rem;
+  padding: 0.85rem 2rem;
   cursor: pointer;
   transition: transform 0.15s ease, background 0.15s ease;
 }
