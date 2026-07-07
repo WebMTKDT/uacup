@@ -1,10 +1,14 @@
 /* UA Cup — Estilos según GDD */
 
 :root {
+  --ua-bg-deep: #021236;
+  --ua-bg-light: #07378b;
+  --ua-bg-gradient: linear-gradient(180deg, #021236 0%, #07378b 100%);
+  --ua-data-panel: #021236;
   --ua-field-green: #2b7c08;
   --ua-ui-gray: #64656a;
   --ua-ui-gray-dark: #52535a;
-  --ua-bg: #2b7c08;
+  --ua-bg: #021236;
   --ua-bg-soft: #64656a;
   --ua-accent: #ec7700;
   --ua-accent-dark: #0d0c0c;
@@ -27,7 +31,7 @@ html, body {
   font-family: 'Roboto', sans-serif;
   font-weight: 500;
   color: var(--ua-text);
-  background: var(--ua-field-green);
+  background: var(--ua-bg-gradient);
   overflow: hidden;
   touch-action: manipulation;
 }
@@ -63,17 +67,16 @@ html, body {
   justify-content: flex-end;
   text-align: center;
   padding: 1.5rem 1.5rem calc(2.75rem + env(safe-area-inset-bottom, 0));
-  background: var(--ua-ui-gray);
+  background: var(--ua-bg-gradient);
 }
 
 .boot-bg {
   position: absolute;
   inset: 0;
-  background-color: var(--ua-ui-gray);
-  background-image: url('assets/home-screen.png');
-  background-position: center bottom;
-  background-size: contain;
-  background-repeat: no-repeat;
+  background-image: url('assets/home-screen.png'), var(--ua-bg-gradient);
+  background-position: center bottom, center center;
+  background-size: contain, cover;
+  background-repeat: no-repeat, no-repeat;
   z-index: 0;
 }
 
@@ -172,7 +175,7 @@ html, body {
 
 /* ── HUD In-Game ── */
 #game-screen {
-  background: var(--ua-field-green);
+  background: var(--ua-bg-gradient);
   color: #fff;
 }
 
@@ -182,7 +185,7 @@ html, body {
   justify-content: space-between;
   gap: 0.5rem;
   padding: 0.65rem 0.85rem;
-  background: var(--ua-ui-gray);
+  background: var(--ua-data-panel);
   flex-shrink: 0;
   color: #fff;
 }
@@ -280,7 +283,7 @@ html, body {
   font-size: clamp(0.9rem, 3.5vw, 1.05rem);
   font-style: italic;
   color: #fff;
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--ua-data-panel);
   border-radius: 10px;
   pointer-events: none;
   opacity: 1;
@@ -296,7 +299,7 @@ html, body {
 .end-screen {
   align-items: flex-end;
   justify-content: flex-end;
-  background: rgba(100, 101, 106, 0.55);
+  background: linear-gradient(180deg, rgba(2, 18, 54, 0.75) 0%, rgba(7, 55, 139, 0.75) 100%);
   z-index: 20;
 }
 
@@ -307,7 +310,7 @@ html, body {
 .end-panel {
   width: 100%;
   padding: 2rem 1.5rem calc(2rem + env(safe-area-inset-bottom, 0));
-  background: var(--ua-ui-gray);
+  background: var(--ua-data-panel);
   border-radius: 20px 20px 0 0;
   text-align: center;
   transform: translateY(100%);
@@ -369,11 +372,11 @@ html, body {
 }
 
 .modal::backdrop {
-  background: rgba(100, 101, 106, 0.65);
+  background: linear-gradient(180deg, rgba(2, 18, 54, 0.82) 0%, rgba(7, 55, 139, 0.82) 100%);
 }
 
 .modal-panel {
-  background: var(--ua-ui-gray);
+  background: var(--ua-data-panel);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 14px;
   padding: 1.5rem;
