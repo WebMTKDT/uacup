@@ -42,6 +42,23 @@ const ASSET_PATHS = {
   balon: 'assets/balon.png'
 };
 
+const GK_SPRITE_PATHS = {
+  idle: 'assets/idle-max.png',
+  shiftL: 'assets/left-lateral-shift-max.png',
+  shiftR: 'assets/right-lateral-shift-max.png',
+  diveL: 'assets/left-dive-max.png',
+  diveR: 'assets/right-dive-max.png',
+  catch: 'assets/caught-ball-max.png'
+};
+
+const GkVisuals = {
+  images: {},
+  currentState: 'idle',
+  previousState: 'idle',
+  transitionAlpha: 1,
+  TRANSITION_SPEED: 8
+};
+
 const GameAssets = {
   background: null,
   porteria: null,
@@ -136,11 +153,14 @@ function preloadAssets() {
   assetsLoadPromise = Promise.all([
     loadImage(ASSET_PATHS.background).then((img) => { GameAssets.background = img; }),
     loadImage(ASSET_PATHS.porteria).then((img) => { GameAssets.porteria = img; }),
-    loadImage(ASSET_PATHS.balon).then((img) => { GameAssets.balon = img; })
+    loadImage(ASSET_PATHS.balon).then((img) => { GameAssets.balon = img; }),
+    ...Object.entries(GK_SPRITE_PATHS).map(([key, src]) =>
+      loadImage(src).then((img) => { GkVisuals.images[key] = img; })
+    )
   ])
     .then(() => {
       assetsReady = true;
-      console.log('UA Cup: assets precargados correctamente');
+      console.log('UA Cup: assets precargados correctamente (incl. Max el Pingüino)');
     })
     .catch((err) => {
       console.warn('UA Cup: error al precargar assets, usando fallback vectorial', err);
@@ -266,6 +286,9 @@ function resetPorteroDificultad() {
   Portero.direccion = 1;
   Portero.fase = 'mover';
   Portero.faseTiempo = 0;
+  GkVisuals.currentState = 'idle';
+  GkVisuals.previousState = 'idle';
+  GkVisuals.transitionAlpha = 1;
 }
 
 function resetPartida() {
@@ -378,6 +401,37 @@ function updateBalon(dt) {
 // MOVIMIENTO — PORTERO
 // ═══════════════════════════════════════════
 
+function determinarEstadoPortero() {
+  if (estadoJuego === 'GAMEOVER') return 'catch';
+  if (estadoJuego === 'GOAL_PAUSE' || Portero.fase === 'idle') return 'idle';
+
+  const margen = (Portero.maxX - Portero.minX) * 0.25;
+
+  if (Portero.direccion === -1) {
+    if (Portero.x < Portero.minX + margen) return 'diveL';
+    return 'shiftL';
+  }
+
+  if (Portero.direccion === 1) {
+    if (Portero.x > Portero.maxX - margen) return 'diveR';
+    return 'shiftR';
+  }
+
+  return 'idle';
+}
+
+function updateGkVisuals(dt) {
+  const nuevoEstado = determinarEstadoPortero();
+
+  if (nuevoEstado !== GkVisuals.currentState) {
+    GkVisuals.previousState = GkVisuals.currentState;
+    GkVisuals.currentState = nuevoEstado;
+    GkVisuals.transitionAlpha = 0;
+  }
+
+  GkVisuals.transitionAlpha = Math.min(1, GkVisuals.transitionAlpha + dt * GkVisuals.TRANSITION_SPEED);
+}
+
 function updatePortero(dt) {
   Portero.faseTiempo += dt;
 
@@ -387,6 +441,7 @@ function updatePortero(dt) {
       Portero.faseTiempo = 0;
       Portero.direccion *= -1;
     }
+    updateGkVisuals(dt);
     return;
   }
 
@@ -402,6 +457,8 @@ function updatePortero(dt) {
     Portero.fase = 'idle';
     Portero.faseTiempo = 0;
   }
+
+  updateGkVisuals(dt);
 }
 
 // ═══════════════════════════════════════════
@@ -578,13 +635,41 @@ function drawField() {
   }
 }
 
+function drawGkSprite(stateKey, alpha) {
+  const img = GkVisuals.images[stateKey];
+  if (!img || alpha <= 0) return;
+
+  const drawW = GK_WIDTH * 1.5;
+  const drawH = GK_HEIGHT * 1.5;
+  const drawX = Portero.x - drawW / 2;
+  const drawY = Portero.y - drawH / 2;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.drawImage(img, drawX, drawY, drawW, drawH);
+  ctx.restore();
+}
+
 function drawPortero() {
-  const gk = porteroHitbox();
-  ctx.fillStyle = '#f5c518';
-  ctx.fillRect(gk.x, gk.y, gk.w, gk.h);
-  ctx.strokeStyle = '#1a1a1a';
-  ctx.lineWidth = 3;
-  ctx.strokeRect(gk.x, gk.y, gk.w, gk.h);
+  const hasSprites = GkVisuals.images.idle;
+
+  if (!hasSprites) {
+    const gk = porteroHitbox();
+    ctx.fillStyle = '#f5c518';
+    ctx.fillRect(gk.x, gk.y, gk.w, gk.h);
+    ctx.strokeStyle = '#1a1a1a';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(gk.x, gk.y, gk.w, gk.h);
+    return;
+  }
+
+  const alphaPrev = 1 - GkVisuals.transitionAlpha;
+  const alphaCurr = GkVisuals.transitionAlpha;
+
+  if (GkVisuals.previousState !== GkVisuals.currentState && alphaPrev > 0) {
+    drawGkSprite(GkVisuals.previousState, alphaPrev);
+  }
+  drawGkSprite(GkVisuals.currentState, alphaCurr);
 }
 
 function drawBalon() {
@@ -696,6 +781,8 @@ function gameLoop(timestamp) {
       resetBalon();
       estadoJuego = 'PLAYING';
     }
+  } else if (estadoJuego === 'GAMEOVER') {
+    updateGkVisuals(dt);
   }
 
   render();
