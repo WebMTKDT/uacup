@@ -12,6 +12,19 @@ const VIEWPORT_ASPECT = VIEWPORT.W / VIEWPORT.H;
 const CANVAS_HEIGHT_RATIO = 0.90;
 const FRICTION = 0.98;
 const MIN_DRAG_PX = 50;
+const BALL_RADIUS = 65;
+const BALL_START_X = VIEWPORT.W / 2;
+const BALL_START_Y = VIEWPORT.H * 0.85;
+
+const GOAL_LINE_Y = 300;
+const GOAL_LEFT = 260;
+const GOAL_RIGHT = 820;
+const POST_THICKNESS = 24;
+const CROSSBAR_THICKNESS = 20;
+
+const GK_WIDTH = 130;
+const GK_HEIGHT = 170;
+const GK_BASE_Y = GOAL_LINE_Y + 90;
 
 const PORTERO_TIEMPO_BASE = 2.5;
 const PORTERO_IDLE_BASE = 0.3;
@@ -21,39 +34,10 @@ const EASE_IN_OUT_DESDE_GOL = 12;
 
 const RESET_BALON_MS = 400;
 const FLOAT_PLUS_MS = 1000;
-const GK_CATCH_DISPLAY_MS = 1750;
-const GK_VICTORY_DISPLAY_MS = 1000;
 const FORCE_SCALE = 0.38;
 
-/** Posiciones normalizadas (0–1) alineadas al arte de background2IG-09.png */
-const SCENE_NORM = {
-  goalLeft: 0.155,
-  goalRight: 0.845,
-  goalLineY: 0.185,
-  gkY: 0.265,
-  ballX: 0.5,
-  ballY: 0.535,
-  ballRadius: 0.048
-};
-
-const sceneRect = { dx: 0, dy: 0, dw: VIEWPORT.W, dh: VIEWPORT.H };
-
-let BALL_RADIUS = 52;
-let BALL_START_X = VIEWPORT.W / 2;
-let BALL_START_Y = 1020;
-
-let GOAL_LINE_Y = 460;
-let GOAL_LEFT = 170;
-let GOAL_RIGHT = 910;
-const POST_THICKNESS = 24;
-const CROSSBAR_THICKNESS = 20;
-
-let GK_WIDTH = 140;
-let GK_HEIGHT = 190;
-let GK_BASE_Y = 570;
-
 const ASSET_PATHS = {
-  background: 'assets/background2IG-09.png',
+  background: 'assets/background-in-game.png',
   porteria: 'assets/porteria.png',
   balon: 'assets/balon.png'
 };
@@ -89,7 +73,7 @@ let assetsLoadPromise = null;
 // ESTADO GLOBAL
 // ═══════════════════════════════════════════
 
-/** @type {'IDLE'|'PLAYING'|'GOAL_PAUSE'|'GAMEOVER_ANIM'|'GAMEOVER'} */
+/** @type {'IDLE'|'PLAYING'|'GOAL_PAUSE'|'GAMEOVER'} */
 let estadoJuego = 'IDLE';
 
 let tiempoInicio = null;
@@ -149,9 +133,6 @@ let goalResetTimer = 0;
 let floatPlusTimer = 0;
 let showFloatPlus = false;
 let primerDisparoHecho = false;
-/** @type {'catch'|'victory'|null} */
-let gkDefeatPhase = null;
-let gkDefeatTimer = 0;
 
 // ═══════════════════════════════════════════
 // PRECARGA DE ASSETS
@@ -207,7 +188,6 @@ function preloadAssets() {
   ])
     .then(() => {
       assetsReady = true;
-      syncGameplayLayout();
       console.log('UA Cup: assets precargados correctamente (incl. Max el Pingüino)');
     })
     .catch((err) => {
@@ -222,57 +202,6 @@ function preloadAssets() {
 // ═══════════════════════════════════════════
 // UTILIDADES
 // ═══════════════════════════════════════════
-
-function normToCanvas(nx, ny) {
-  return {
-    x: sceneRect.dx + nx * sceneRect.dw,
-    y: sceneRect.dy + ny * sceneRect.dh
-  };
-}
-
-function normRadiusToPx(nRadius) {
-  return nRadius * sceneRect.dw;
-}
-
-function updateSceneRect() {
-  const img = GameAssets.background;
-  if (!img?.naturalWidth) {
-    sceneRect.dx = 0;
-    sceneRect.dy = 0;
-    sceneRect.dw = VIEWPORT.W;
-    sceneRect.dh = VIEWPORT.H;
-    return;
-  }
-
-  const scale = Math.min(VIEWPORT.W / img.naturalWidth, VIEWPORT.H / img.naturalHeight);
-  sceneRect.dw = img.naturalWidth * scale;
-  sceneRect.dh = img.naturalHeight * scale;
-  sceneRect.dx = (VIEWPORT.W - sceneRect.dw) / 2;
-  sceneRect.dy = (VIEWPORT.H - sceneRect.dh) / 2;
-}
-
-function syncGameplayLayout() {
-  updateSceneRect();
-
-  const goalLeftPt = normToCanvas(SCENE_NORM.goalLeft, SCENE_NORM.goalLineY);
-  const goalRightPt = normToCanvas(SCENE_NORM.goalRight, SCENE_NORM.goalLineY);
-  const gkPt = normToCanvas(0.5, SCENE_NORM.gkY);
-  const ballPt = normToCanvas(SCENE_NORM.ballX, SCENE_NORM.ballY);
-
-  GOAL_LEFT = goalLeftPt.x;
-  GOAL_RIGHT = goalRightPt.x;
-  GOAL_LINE_Y = goalLeftPt.y;
-  GK_BASE_Y = gkPt.y;
-  BALL_START_X = ballPt.x;
-  BALL_START_Y = ballPt.y;
-  BALL_RADIUS = Math.max(42, Math.round(normRadiusToPx(SCENE_NORM.ballRadius)));
-  GK_WIDTH = Math.round((GOAL_RIGHT - GOAL_LEFT) * 0.19);
-  GK_HEIGHT = Math.round(GK_WIDTH * 1.36);
-
-  Portero.minX = GOAL_LEFT + GK_WIDTH / 2;
-  Portero.maxX = GOAL_RIGHT - GK_WIDTH / 2;
-  Portero.y = GK_BASE_Y;
-}
 
 function clamp(v, min, max) {
   return Math.max(min, Math.min(max, v));
@@ -379,7 +308,6 @@ function resizeCanvas() {
 
   canvas.width = VIEWPORT.W;
   canvas.height = VIEWPORT.H;
-  syncGameplayLayout();
   ajustarEscalaCanvas();
 }
 
@@ -405,14 +333,12 @@ function resetPorteroDificultad() {
   Portero.direccion = 1;
   Portero.fase = 'mover';
   Portero.faseTiempo = 0;
-  Portero.y = GK_BASE_Y;
   GkVisuals.currentState = 'idle';
   GkVisuals.previousState = 'idle';
   GkVisuals.transitionAlpha = 1;
 }
 
 function resetPartida() {
-  syncGameplayLayout();
   racha = 0;
   tiempoInicio = null;
   duracionTotal = 0;
@@ -420,8 +346,6 @@ function resetPartida() {
   goalResetTimer = 0;
   floatPlusTimer = 0;
   showFloatPlus = false;
-  gkDefeatPhase = null;
-  gkDefeatTimer = 0;
   resetBalon();
   resetPorteroDificultad();
   actualizarMarcadorUI();
@@ -525,8 +449,8 @@ function updateBalon(dt) {
 // ═══════════════════════════════════════════
 
 function determinarEstadoPortero() {
-  if (estadoJuego === 'GAMEOVER_ANIM' || estadoJuego === 'GAMEOVER') {
-    return GkVisuals.currentState;
+  if (estadoJuego === 'GAMEOVER') {
+    return Balon.tocoPortero ? 'catch' : 'victory';
   }
   if (estadoJuego === 'GOAL_PAUSE' || Portero.fase === 'idle') return 'idle';
 
@@ -617,7 +541,8 @@ function checkColisiones() {
 
   // 2. Colisión con el Portero
   if (aabbOverlap(ball.x, ball.y, ball.w, ball.h, gk.x, gk.y, gk.w, gk.h)) {
-    iniciarSecuenciaGameOver(true);
+    Balon.tocoPortero = true;
+    triggerGameOver();
     return;
   }
 
@@ -693,25 +618,12 @@ function triggerGol() {
   actualizarMarcadorUI();
 }
 
-function enterGkPose(state, instant = false) {
-  if (GkVisuals.currentState !== state) {
-    GkVisuals.previousState = GkVisuals.currentState;
-    GkVisuals.currentState = state;
-    GkVisuals.transitionAlpha = instant ? 1 : 0;
-  } else if (instant) {
-    GkVisuals.transitionAlpha = 1;
-  }
-}
+async function triggerGameOver() {
+  if (estadoJuego === 'GAMEOVER') return;
 
-function iniciarSecuenciaGameOver(caughtByGk) {
-  if (estadoJuego === 'GAMEOVER_ANIM' || estadoJuego === 'GAMEOVER') return;
-
-  estadoJuego = 'GAMEOVER_ANIM';
+  estadoJuego = 'GAMEOVER';
   Balon.enVuelo = false;
   Balon.activo = false;
-  Balon.vx = 0;
-  Balon.vy = 0;
-  Portero.fase = 'idle';
 
   if (tiempoInicio != null) {
     duracionTotal = Date.now() - tiempoInicio;
@@ -719,49 +631,16 @@ function iniciarSecuenciaGameOver(caughtByGk) {
     duracionTotal = 0;
   }
 
-  if (caughtByGk) {
-    Balon.tocoPortero = true;
-    enterGkPose('catch', true);
-    gkDefeatPhase = 'catch';
-    gkDefeatTimer = GK_CATCH_DISPLAY_MS;
-    return;
+  const poseFinal = Balon.tocoPortero ? 'catch' : 'victory';
+  if (GkVisuals.currentState !== poseFinal) {
+    GkVisuals.previousState = GkVisuals.currentState;
+    GkVisuals.currentState = poseFinal;
+    GkVisuals.transitionAlpha = 0;
   }
-
-  enterGkPose('victory', true);
-  gkDefeatPhase = 'victory';
-  gkDefeatTimer = GK_VICTORY_DISPLAY_MS;
-}
-
-function updateGameOverSequence(dt) {
-  updateGkVisuals(dt);
-  gkDefeatTimer -= dt * 1000;
-  if (gkDefeatTimer > 0) return;
-
-  if (gkDefeatPhase === 'catch') {
-    enterGkPose('victory', false);
-    gkDefeatPhase = 'victory';
-    gkDefeatTimer = GK_VICTORY_DISPLAY_MS;
-    return;
-  }
-
-  if (gkDefeatPhase === 'victory') {
-    finalizarGameOver();
-  }
-}
-
-function finalizarGameOver() {
-  if (estadoJuego === 'GAMEOVER') return;
-
-  estadoJuego = 'GAMEOVER';
-  gkDefeatPhase = null;
-  gkDefeatTimer = 0;
 
   const finalScore = { goles: racha, duracion_ms: duracionTotal };
-  mostrarPantallaFinal(finalScore);
-}
 
-function triggerGameOver() {
-  iniciarSecuenciaGameOver(false);
+  mostrarPantallaFinal(finalScore);
 }
 
 function mostrarPantallaFinal(score) {
@@ -788,49 +667,41 @@ function actualizarCronometroUI(elapsedMs) {
 // RENDER
 // ═══════════════════════════════════════════
 
-function drawBackground() {
-  const img = GameAssets.background;
-  if (!img) {
+function drawField() {
+  if (GameAssets.background) {
+    ctx.drawImage(GameAssets.background, 0, 0, VIEWPORT.W, VIEWPORT.H);
+  } else {
     const grd = ctx.createLinearGradient(0, 0, 0, VIEWPORT.H);
     grd.addColorStop(0, '#2b7c08');
     grd.addColorStop(1, '#236606');
     ctx.fillStyle = grd;
     ctx.fillRect(0, 0, VIEWPORT.W, VIEWPORT.H);
-    return;
   }
 
-  updateSceneRect();
-  ctx.drawImage(img, sceneRect.dx, sceneRect.dy, sceneRect.dw, sceneRect.dh);
-}
-
-function drawGoal() {
-  if (!GameAssets.porteria) return;
-
-  const goalW = GOAL_RIGHT - GOAL_LEFT;
-  const aspect = GameAssets.porteria.naturalHeight / GameAssets.porteria.naturalWidth;
-  const goalH = goalW * aspect;
-  const x = GOAL_LEFT;
-  const y = GOAL_LINE_Y - goalH * 0.12;
-
-  ctx.save();
-  ctx.globalCompositeOperation = 'source-over';
-  ctx.drawImage(GameAssets.porteria, x, y, goalW, goalH);
-  ctx.restore();
-}
-
-function drawField() {
-  drawBackground();
-  drawGoal();
+  if (GameAssets.porteria) {
+    const goalW = GOAL_RIGHT - GOAL_LEFT + POST_THICKNESS;
+    const goalH = GK_BASE_Y + GK_HEIGHT - GOAL_LINE_Y + CROSSBAR_THICKNESS;
+    ctx.save();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.drawImage(
+      GameAssets.porteria,
+      GOAL_LEFT - POST_THICKNESS / 2,
+      GOAL_LINE_Y - CROSSBAR_THICKNESS,
+      goalW,
+      goalH
+    );
+    ctx.restore();
+  }
 }
 
 function drawGkSprite(stateKey, alpha) {
   const img = GkVisuals.images[stateKey];
   if (!img || alpha <= 0) return;
 
-  const drawW = GK_WIDTH * 1.35;
-  const drawH = GK_HEIGHT * 1.35;
+  const drawW = GK_WIDTH * 1.5;
+  const drawH = GK_HEIGHT * 1.5;
   const drawX = Portero.x - drawW / 2;
-  const drawY = Portero.y - drawH * 0.88;
+  const drawY = Portero.y - drawH / 2;
 
   ctx.save();
   ctx.globalAlpha = alpha;
@@ -988,8 +859,6 @@ function gameLoop(timestamp) {
       resetBalon();
       estadoJuego = 'PLAYING';
     }
-  } else if (estadoJuego === 'GAMEOVER_ANIM') {
-    updateGameOverSequence(dt);
   } else if (estadoJuego === 'GAMEOVER') {
     updateGkVisuals(dt);
   }
