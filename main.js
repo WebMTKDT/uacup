@@ -776,13 +776,36 @@ function drawFloatPlus() {
 
   const alpha = clamp(floatPlusTimer / FLOAT_PLUS_MS, 0, 1);
   const offsetY = (1 - alpha) * 60;
+  const x = VIEWPORT.W / 2;
+  const y = VIEWPORT.H * 0.42 - offsetY;
 
   ctx.save();
   ctx.globalAlpha = alpha;
-  ctx.fillStyle = '#ec7700';
-  ctx.font = '500 96px Roboto, sans-serif';
+  ctx.font = '700 88px Roboto, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('+1', VIEWPORT.W / 2, VIEWPORT.H * 0.42 - offsetY);
+  ctx.textBaseline = 'middle';
+
+  const label = '+1';
+  const textW = ctx.measureText(label).width;
+  const padX = 30;
+  const padY = 18;
+  const boxW = textW + padX * 2;
+  const boxH = 88 + padY * 2;
+  const boxX = x - boxW / 2;
+  const boxY = y - boxH / 2;
+
+  ctx.fillStyle = '#ec7700';
+  if (typeof ctx.roundRect === 'function') {
+    ctx.beginPath();
+    ctx.roundRect(boxX, boxY, boxW, boxH, 20);
+    ctx.fill();
+  } else {
+    ctx.fillRect(boxX, boxY, boxW, boxH);
+  }
+
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.fillText(label, x, y + 2);
   ctx.restore();
 }
 

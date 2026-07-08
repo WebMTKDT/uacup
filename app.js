@@ -8,6 +8,8 @@ const GAME_OVER_PAUSE_MS = 1200;
 
 let muted = false;
 let validatedPlayerName = '';
+let bgmAudio = null;
+let bgmVolume = 0.35;
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -83,7 +85,36 @@ function showIntroMessage() {
   setTimeout(() => { intro.style.display = 'none'; }, 2100);
 }
 
+function initBgm() {
+  if (bgmAudio) return;
+  bgmAudio = new Audio('assets/Epic Rock Action Trailer.wav');
+  bgmAudio.loop = true;
+  bgmAudio.preload = 'auto';
+  bgmAudio.volume = bgmVolume;
+}
+
+function setBgmMuted(nextMuted) {
+  muted = nextMuted;
+  if (!bgmAudio) return;
+  bgmAudio.muted = muted;
+}
+
+function playBgm() {
+  initBgm();
+  if (!bgmAudio) return;
+  bgmAudio.play().catch(() => {
+    /* Autoplay bloqueado hasta interacción del usuario */
+  });
+}
+
+function stopBgm() {
+  if (!bgmAudio) return;
+  bgmAudio.pause();
+  bgmAudio.currentTime = 0;
+}
+
 function startGame() {
+  playBgm();
   showScreen('game-screen');
   updateRecordHUD();
   showIntroMessage();
@@ -99,6 +130,7 @@ function onJugarClick() {
 }
 
 function exitToMenu() {
+  stopBgm();
   if (window.UACup) {
     window.UACup.pausarJuego();
     window.UACup.resetPartida();
@@ -136,6 +168,7 @@ function showEndScreen(data) {
   }
 
   setLocalRecord(data.goles);
+  stopBgm();
   showScreen('game-screen');
 
   endScreen.classList.remove('hidden', 'slide-in');
@@ -294,10 +327,17 @@ function bindUI() {
   $('#btn-home')?.addEventListener('click', exitToMenu);
 
   $('#btn-mute')?.addEventListener('click', (e) => {
-    muted = !muted;
+    setBgmMuted(!muted);
     const btn = e.currentTarget;
-    btn.textContent = muted ? '🔇' : '🔊';
+    btn.textContent = muted ? '🔇' : '🎵';
     btn.setAttribute('aria-pressed', String(muted));
+  });
+
+  $('#bgm-volume')?.addEventListener('input', (e) => {
+    const next = Number(e.currentTarget.value);
+    bgmVolume = Number.isFinite(next) ? Math.max(0, Math.min(1, next)) : 0.35;
+    initBgm();
+    if (bgmAudio) bgmAudio.volume = bgmVolume;
   });
 
   $('#btn-play-again')?.addEventListener('click', () => {
@@ -313,6 +353,7 @@ function bindUI() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  initBgm();
   const client = initSupabase();
   if (window.UACupApi) {
     window.UACupApi.initApi(client);
@@ -325,6 +366,9 @@ document.addEventListener('DOMContentLoaded', () => {
   validatedPlayerName = getPlayerName();
   updateRecordHUD();
   bindUI();
+
+  const volumeEl = $('#bgm-volume');
+  if (volumeEl) volumeEl.value = String(bgmVolume);
 
   window.onUACupGameOver = handleGameOver;
 });

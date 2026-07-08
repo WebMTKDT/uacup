@@ -36,7 +36,17 @@
           <span id="hud-timer" class="hud-timer" data-hud-timer>00:00.0</span>
         </div>
         <div class="hud-block hud-block--right">
-          <button type="button" id="btn-mute" class="hud-icon-btn" aria-label="Silenciar sonido" aria-pressed="false">🔊</button>
+          <button type="button" id="btn-mute" class="hud-icon-btn" aria-label="Silenciar música" aria-pressed="false">🎵</button>
+          <input
+            type="range"
+            id="bgm-volume"
+            class="hud-volume"
+            min="0"
+            max="1"
+            step="0.05"
+            value="0.35"
+            aria-label="Volumen de música"
+          />
           <button type="button" id="btn-close-game" class="hud-icon-btn" aria-label="Salir al menú">✕</button>
         </div>
       </header>

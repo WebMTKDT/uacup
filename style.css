@@ -110,6 +110,7 @@ html, body {
   background: #ec7700;
   border-color: rgba(255, 255, 255, 0.25);
   color: #fff;
+  animation: play-pulse 2.2s ease-in-out infinite;
 }
 
 #boot-screen .btn--primary:active {
@@ -236,6 +237,13 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.hud-volume {
+  width: clamp(4.25rem, 18vw, 6.25rem);
+  accent-color: #ec7700;
+  cursor: pointer;
+  align-self: center;
 }
 
 .hud-icon-btn[aria-pressed="true"] {
@@ -440,6 +448,11 @@ html, body {
   40% { transform: translateX(8px); }
   60% { transform: translateX(-6px); }
   80% { transform: translateX(6px); }
+}
+
+@keyframes play-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
 }
 
 /* ── Leaderboard ── */
