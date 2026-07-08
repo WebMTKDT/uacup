@@ -240,30 +240,6 @@ html, body {
   justify-content: center;
 }
 
-.hud-volume {
-  width: clamp(4.25rem, 18vw, 6.25rem);
-  accent-color: #ec7700;
-  cursor: pointer;
-  position: absolute;
-  right: 2.75rem;
-  top: calc(100% + 0.35rem);
-  z-index: 30;
-  opacity: 0;
-  transform: translateY(-4px);
-  pointer-events: none;
-  transition: opacity 0.18s ease, transform 0.18s ease;
-  background: rgba(2, 18, 54, 0.92);
-  padding: 0.3rem 0.4rem;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.hud-volume.hud-volume--visible {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-
 .hud-icon-btn[aria-pressed="true"] {
   opacity: 0.55;
 }
@@ -525,8 +501,21 @@ html, body {
     width: 100%;
   }
 
+  .boot-bg {
+    background-size: 100% auto, cover;
+    background-position: center bottom, center center;
+  }
+
+  #game-screen .game-container {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+  }
+
   #game-container {
     width: 100%;
     max-width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
   }
 }

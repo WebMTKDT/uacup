@@ -266,21 +266,39 @@ function porteroHitbox() {
 // CANVAS Y ESCALADO
 // ═══════════════════════════════════════════
 
-/** Ajusta el tamaño visual del canvas al 90 % de la altura visible del dispositivo. */
+/** Escala el canvas de forma uniforme (sin distorsión) para mantener proporción 9:16. */
 function ajustarEscalaCanvas() {
   if (!canvas) return;
 
-  const nuevaAltura = window.innerHeight * CANVAS_HEIGHT_RATIO;
+  const container = canvas.parentElement;
   const esMovil = window.innerWidth <= 767;
-  const displayW = esMovil ? window.innerWidth : nuevaAltura * VIEWPORT_ASPECT;
+  let displayW;
+  let displayH;
 
-  canvas.style.height = `${nuevaAltura}px`;
+  if (esMovil) {
+    const availW = window.innerWidth;
+    const hud = document.querySelector('.game-hud');
+    const hudH = hud?.offsetHeight || 0;
+    const availH = container?.clientHeight || Math.max(0, window.innerHeight - hudH);
+
+    displayH = availH;
+    displayW = displayH * VIEWPORT_ASPECT;
+
+    if (displayW > availW) {
+      displayW = availW;
+      displayH = displayW / VIEWPORT_ASPECT;
+    }
+  } else {
+    displayH = window.innerHeight * CANVAS_HEIGHT_RATIO;
+    displayW = displayH * VIEWPORT_ASPECT;
+  }
+
+  canvas.style.height = `${displayH}px`;
   canvas.style.width = `${displayW}px`;
 
-  const container = canvas.parentElement;
   if (container) {
-    container.style.height = `${nuevaAltura}px`;
-    container.style.width = `${displayW}px`;
+    container.style.height = esMovil ? '100%' : `${displayH}px`;
+    container.style.width = esMovil ? '100%' : `${displayW}px`;
     container.style.maxWidth = '100%';
   }
 }
@@ -873,6 +891,7 @@ function iniciarJuego() {
 
   ctx = canvas.getContext('2d');
   resizeCanvas();
+  requestAnimationFrame(() => resizeCanvas());
   window.addEventListener('resize', resizeCanvas);
 
   if (!canvas.dataset.pointerBound) {

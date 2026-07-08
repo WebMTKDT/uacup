@@ -9,8 +9,7 @@ const GAME_OVER_PAUSE_MS = 1200;
 let muted = false;
 let validatedPlayerName = '';
 let bgmAudio = null;
-let bgmVolume = 0.35;
-let volumeUiTimer = null;
+const BGM_VOLUME = 0.35;
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -91,19 +90,7 @@ function initBgm() {
   bgmAudio = new Audio('assets/Epic Rock Action Trailer.wav');
   bgmAudio.loop = true;
   bgmAudio.preload = 'auto';
-  bgmAudio.volume = bgmVolume;
-}
-
-function showVolumePopover() {
-  const volumeEl = $('#bgm-volume');
-  if (!volumeEl) return;
-
-  volumeEl.classList.add('hud-volume--visible');
-  if (volumeUiTimer) clearTimeout(volumeUiTimer);
-  volumeUiTimer = setTimeout(() => {
-    volumeEl.classList.remove('hud-volume--visible');
-    volumeUiTimer = null;
-  }, 2200);
+  bgmAudio.volume = BGM_VOLUME;
 }
 
 function setBgmMuted(nextMuted) {
@@ -117,19 +104,6 @@ function updateBgmButtonUI() {
   if (!btn) return;
   btn.textContent = muted ? '🔇' : '🎵';
   btn.setAttribute('aria-pressed', String(muted));
-}
-
-function setBgmVolume(nextVolume) {
-  const normalized = Number.isFinite(nextVolume) ? Math.max(0, Math.min(1, nextVolume)) : 0.35;
-  bgmVolume = normalized;
-  initBgm();
-  if (!bgmAudio) return;
-  bgmAudio.volume = bgmVolume;
-
-  if (bgmVolume > 0 && muted) {
-    setBgmMuted(false);
-  }
-  updateBgmButtonUI();
 }
 
 function playBgm() {
@@ -361,17 +335,8 @@ function bindUI() {
 
   $('#btn-mute')?.addEventListener('click', () => {
     setBgmMuted(!muted);
-    showVolumePopover();
     updateBgmButtonUI();
   });
-
-  const onVolumeChange = (e) => {
-    const next = Number(e.currentTarget.value);
-    setBgmVolume(next);
-    showVolumePopover();
-  };
-  $('#bgm-volume')?.addEventListener('input', onVolumeChange);
-  $('#bgm-volume')?.addEventListener('change', onVolumeChange);
 
   $('#btn-play-again')?.addEventListener('click', () => {
     $('#end-screen')?.classList.remove('visible', 'slide-in');
@@ -400,8 +365,6 @@ document.addEventListener('DOMContentLoaded', () => {
   updateRecordHUD();
   bindUI();
 
-  const volumeEl = $('#bgm-volume');
-  if (volumeEl) volumeEl.value = String(bgmVolume);
   updateBgmButtonUI();
 
   window.onUACupGameOver = handleGameOver;
