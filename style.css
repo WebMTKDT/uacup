@@ -176,10 +176,7 @@ html, body {
 
 /* ── HUD In-Game ── */
 #game-screen {
-  background-image: url('assets/background2IG-09.png');
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: cover;
+  background: var(--ua-bg-gradient);
   color: #fff;
 }
 
@@ -273,6 +270,7 @@ html, body {
   touch-action: none;
   border-radius: 0;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  background: transparent;
 }
 
 /* ── Mensaje inicial (1.5 s fade-out) ── */
