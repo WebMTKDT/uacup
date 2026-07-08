@@ -74,7 +74,7 @@ html, body {
   position: absolute;
   inset: 0;
   background-image: url('assets/home-screen.png'), var(--ua-bg-gradient);
-  background-position: center top, center center;
+  background-position: center center, center center;
   background-size: contain, cover;
   background-repeat: no-repeat, no-repeat;
   z-index: 0;
@@ -503,14 +503,7 @@ html, body {
 
   .boot-bg {
     background-size: 100% auto, cover;
-    background-position: center top, center center;
-  }
-
-  #game-screen {
-    background-image: url('assets/background-in-game.png'), var(--ua-bg-gradient);
-    background-repeat: no-repeat, no-repeat;
-    background-position: center top, center center;
-    background-size: cover, cover;
+    background-position: center center, center center;
   }
 
   #game-screen .game-container {
