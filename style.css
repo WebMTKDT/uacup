@@ -519,3 +519,14 @@ html, body {
   color: var(--ua-muted);
   line-height: 1.4;
 }
+
+@media (max-width: 767px) {
+  #boot-screen {
+    width: 100%;
+  }
+
+  #game-container {
+    width: 100%;
+    max-width: 100%;
+  }
+}
