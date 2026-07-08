@@ -4,11 +4,12 @@
 
 const RECORD_LOCAL_KEY = 'uacup_record_local';
 const PLAYER_NAME_KEY = 'uacup_nombre';
-const GAME_OVER_PAUSE_MS = 1200;
+const BGM_FADE_ON_CATCH_MS = 2800;
 
 let muted = false;
 let validatedPlayerName = '';
 let bgmAudio = null;
+let bgmFadeRaf = null;
 const BGM_VOLUME = 0.35;
 
 const $ = (sel) => document.querySelector(sel);
@@ -93,6 +94,39 @@ function initBgm() {
   bgmAudio.volume = BGM_VOLUME;
 }
 
+function cancelBgmFade() {
+  if (bgmFadeRaf != null) {
+    cancelAnimationFrame(bgmFadeRaf);
+    bgmFadeRaf = null;
+  }
+}
+
+function fadeOutBgm(durationMs = BGM_FADE_ON_CATCH_MS) {
+  initBgm();
+  if (!bgmAudio || muted) return;
+
+  cancelBgmFade();
+  const startVolume = bgmAudio.volume;
+  const startTime = performance.now();
+
+  const step = (now) => {
+    const progress = Math.min((now - startTime) / durationMs, 1);
+    const eased = 1 - Math.pow(1 - progress, 2);
+    bgmAudio.volume = Math.max(0, startVolume * (1 - eased));
+
+    if (progress < 1) {
+      bgmFadeRaf = requestAnimationFrame(step);
+      return;
+    }
+
+    stopBgm();
+    bgmAudio.volume = BGM_VOLUME;
+    bgmFadeRaf = null;
+  };
+
+  bgmFadeRaf = requestAnimationFrame(step);
+}
+
 function setBgmMuted(nextMuted) {
   muted = nextMuted;
   if (!bgmAudio) return;
@@ -109,12 +143,15 @@ function updateBgmButtonUI() {
 function playBgm() {
   initBgm();
   if (!bgmAudio) return;
+  cancelBgmFade();
+  bgmAudio.volume = BGM_VOLUME;
   bgmAudio.play().catch(() => {
     /* Autoplay bloqueado hasta interacción del usuario */
   });
 }
 
 function stopBgm() {
+  cancelBgmFade();
   if (!bgmAudio) return;
   bgmAudio.pause();
   bgmAudio.currentTime = 0;
@@ -175,14 +212,18 @@ function showEndScreen(data) {
   }
 
   setLocalRecord(data.goles);
-  stopBgm();
+  if (bgmAudio && bgmAudio.volume > 0.02 && !bgmFadeRaf) {
+    fadeOutBgm(500);
+  }
   showScreen('game-screen');
 
   endScreen.classList.remove('hidden', 'slide-in');
   endScreen.classList.add('visible');
   endScreen.setAttribute('aria-hidden', 'false');
 
-  setTimeout(() => endScreen.classList.add('slide-in'), GAME_OVER_PAUSE_MS);
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => endScreen.classList.add('slide-in'));
+  });
 }
 
 function formatLeaderboardTime(ms) {
@@ -368,4 +409,5 @@ document.addEventListener('DOMContentLoaded', () => {
   updateBgmButtonUI();
 
   window.onUACupGameOver = handleGameOver;
+  window.onUACupBallCaught = () => fadeOutBgm(BGM_FADE_ON_CATCH_MS);
 });

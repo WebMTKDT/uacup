@@ -655,6 +655,9 @@ function iniciarSecuenciaGameOver(caughtByGk) {
     enterGkPose('catch', true);
     gkDefeatPhase = 'catch';
     gkDefeatTimer = GK_CATCH_DISPLAY_MS;
+    if (typeof window.onUACupBallCaught === 'function') {
+      window.onUACupBallCaught();
+    }
     return;
   }
 
