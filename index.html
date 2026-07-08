@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="description" content="UA Cup — Penaltis de muerte súbita. Anota en tiempo récord." />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co;" />
   <title>UA Cup</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -117,12 +118,9 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    window.UACUP_SUPABASE_URL = 'https://gcailmdlbrlsebadatpc.supabase.co';
-    window.UACUP_SUPABASE_ANON_KEY = 'sb_publishable_xVp31mxWUddIjJfSOyrulw_Q0cdoprp';
-  </script>
+  <script src="config.js"></script>
   <script src="api.js"></script>
-  <script src="app.js"></script>
   <script src="main.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

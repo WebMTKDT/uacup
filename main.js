@@ -2,6 +2,8 @@
  * UA Cup — Núcleo interactivo del juego (penaltis muerte súbita)
  * Parámetros según GDD (uacup.md)
  */
+(() => {
+'use strict';
 
 // ═══════════════════════════════════════════
 // CONSTANTES (GDD)
@@ -655,9 +657,7 @@ function iniciarSecuenciaGameOver(caughtByGk) {
     enterGkPose('catch', true);
     gkDefeatPhase = 'catch';
     gkDefeatTimer = GK_CATCH_DISPLAY_MS;
-    if (typeof window.onUACupBallCaught === 'function') {
-      window.onUACupBallCaught();
-    }
+    document.dispatchEvent(new CustomEvent('uacup:ball-caught'));
     return;
   }
 
@@ -699,9 +699,11 @@ function triggerGameOver() {
 }
 
 function mostrarPantallaFinal(score) {
-  if (typeof window.onUACupGameOver === 'function') {
-    window.onUACupGameOver(score || { goles: racha, duracion_ms: duracionTotal });
-  }
+  const payload = Object.freeze({
+    goles: Number(score?.goles ?? racha),
+    duracion_ms: Number(score?.duracion_ms ?? duracionTotal)
+  });
+  document.dispatchEvent(new CustomEvent('uacup:gameover', { detail: payload }));
 }
 
 // ═══════════════════════════════════════════
@@ -976,21 +978,22 @@ function reanudarJuego() {
   }
 }
 
-window.UACup = {
-  iniciarJuego,
-  pausarJuego,
-  reanudarJuego,
-  resetPartida,
-  preloadAssets,
-  get estado() { return estadoJuego; },
-  get racha() { return racha; },
-  get duracionTotal() { return duracionTotal; },
-  get tiempoInicio() { return tiempoInicio; }
-};
-
 document.addEventListener('DOMContentLoaded', () => {
+  document.dispatchEvent(new CustomEvent('uacup:engine-ready', {
+    detail: Object.freeze({
+      start: iniciarJuego,
+      pause: pausarJuego,
+      resume: reanudarJuego,
+      reset: resetPartida,
+      getPhase: () => estadoJuego,
+      preload: preloadAssets
+    })
+  }));
+
   preloadAssets();
   if (document.getElementById('gameCanvas') && document.body.dataset.autoStart === 'true') {
     iniciarJuego();
   }
-});
+}, { once: true });
+
+})();

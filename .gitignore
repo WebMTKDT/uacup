@@ -1,0 +1,14 @@
+# Secretos y configuración local
+.env
+.env.local
+config.js
+
+# Dependencias
+node_modules/
+
+# Sistema / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
