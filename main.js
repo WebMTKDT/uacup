@@ -37,7 +37,6 @@ const FLOAT_PLUS_MS = 1000;
 const FORCE_SCALE = 0.38;
 
 const ASSET_PATHS = {
-  background: 'assets/background-in-game.png',
   porteria: 'assets/porteria.png',
   balon: 'assets/balon.png'
 };
@@ -61,7 +60,6 @@ const GkVisuals = {
 };
 
 const GameAssets = {
-  background: null,
   porteria: null,
   balon: null
 };
@@ -179,7 +177,6 @@ function preloadAssets() {
   if (assetsLoadPromise) return assetsLoadPromise;
 
   assetsLoadPromise = Promise.all([
-    loadImage(ASSET_PATHS.background).then((img) => { GameAssets.background = img; }),
     loadPorteriaImage(ASSET_PATHS.porteria).then((img) => { GameAssets.porteria = img; }),
     loadImage(ASSET_PATHS.balon).then((img) => { GameAssets.balon = img; }),
     ...Object.entries(GK_SPRITE_PATHS).map(([key, src]) =>
@@ -668,16 +665,6 @@ function actualizarCronometroUI(elapsedMs) {
 // ═══════════════════════════════════════════
 
 function drawField() {
-  if (GameAssets.background) {
-    ctx.drawImage(GameAssets.background, 0, 0, VIEWPORT.W, VIEWPORT.H);
-  } else {
-    const grd = ctx.createLinearGradient(0, 0, 0, VIEWPORT.H);
-    grd.addColorStop(0, '#2b7c08');
-    grd.addColorStop(1, '#236606');
-    ctx.fillStyle = grd;
-    ctx.fillRect(0, 0, VIEWPORT.W, VIEWPORT.H);
-  }
-
   if (GameAssets.porteria) {
     const goalW = GOAL_RIGHT - GOAL_LEFT + POST_THICKNESS;
     const goalH = GK_BASE_Y + GK_HEIGHT - GOAL_LINE_Y + CROSSBAR_THICKNESS;

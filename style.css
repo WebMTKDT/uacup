@@ -176,7 +176,10 @@ html, body {
 
 /* ── HUD In-Game ── */
 #game-screen {
-  background: var(--ua-bg-gradient);
+  background-image: url('assets/background-in-game.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
   color: #fff;
 }
 
