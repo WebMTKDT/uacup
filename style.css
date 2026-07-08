@@ -204,6 +204,7 @@ html, body {
   display: flex;
   justify-content: flex-end;
   gap: 0.4rem;
+  position: relative;
 }
 
 .hud-label,
@@ -243,7 +244,24 @@ html, body {
   width: clamp(4.25rem, 18vw, 6.25rem);
   accent-color: #ec7700;
   cursor: pointer;
-  align-self: center;
+  position: absolute;
+  right: 2.75rem;
+  top: calc(100% + 0.35rem);
+  z-index: 30;
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  background: rgba(2, 18, 54, 0.92);
+  padding: 0.3rem 0.4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.hud-volume.hud-volume--visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
 .hud-icon-btn[aria-pressed="true"] {
@@ -452,7 +470,7 @@ html, body {
 
 @keyframes play-pulse {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.03); }
+  50% { transform: scale(1.08); }
 }
 
 /* ── Leaderboard ── */

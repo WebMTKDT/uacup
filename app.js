@@ -10,6 +10,7 @@ let muted = false;
 let validatedPlayerName = '';
 let bgmAudio = null;
 let bgmVolume = 0.35;
+let volumeUiTimer = null;
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -91,6 +92,18 @@ function initBgm() {
   bgmAudio.loop = true;
   bgmAudio.preload = 'auto';
   bgmAudio.volume = bgmVolume;
+}
+
+function showVolumePopover() {
+  const volumeEl = $('#bgm-volume');
+  if (!volumeEl) return;
+
+  volumeEl.classList.add('hud-volume--visible');
+  if (volumeUiTimer) clearTimeout(volumeUiTimer);
+  volumeUiTimer = setTimeout(() => {
+    volumeEl.classList.remove('hud-volume--visible');
+    volumeUiTimer = null;
+  }, 2200);
 }
 
 function setBgmMuted(nextMuted) {
@@ -328,6 +341,7 @@ function bindUI() {
 
   $('#btn-mute')?.addEventListener('click', (e) => {
     setBgmMuted(!muted);
+    showVolumePopover();
     const btn = e.currentTarget;
     btn.textContent = muted ? '🔇' : '🎵';
     btn.setAttribute('aria-pressed', String(muted));
@@ -338,6 +352,12 @@ function bindUI() {
     bgmVolume = Number.isFinite(next) ? Math.max(0, Math.min(1, next)) : 0.35;
     initBgm();
     if (bgmAudio) bgmAudio.volume = bgmVolume;
+    if (bgmVolume > 0 && muted) {
+      setBgmMuted(false);
+      $('#btn-mute')?.setAttribute('aria-pressed', 'false');
+      if ($('#btn-mute')) $('#btn-mute').textContent = '🎵';
+    }
+    showVolumePopover();
   });
 
   $('#btn-play-again')?.addEventListener('click', () => {

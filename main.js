@@ -33,7 +33,7 @@ const DIFICULTAD_IDLE_FACTOR = 0.95;
 const EASE_IN_OUT_DESDE_GOL = 12;
 
 const RESET_BALON_MS = 400;
-const FLOAT_PLUS_MS = 800;
+const FLOAT_PLUS_MS = 1000;
 const FORCE_SCALE = 0.38;
 
 const ASSET_PATHS = {
@@ -791,17 +791,12 @@ function drawFloatPlus() {
   const padY = 18;
   const boxW = textW + padX * 2;
   const boxH = 88 + padY * 2;
-  const boxX = x - boxW / 2;
-  const boxY = y - boxH / 2;
+  const diameter = Math.max(boxW, boxH);
 
   ctx.fillStyle = '#ec7700';
-  if (typeof ctx.roundRect === 'function') {
-    ctx.beginPath();
-    ctx.roundRect(boxX, boxY, boxW, boxH, 20);
-    ctx.fill();
-  } else {
-    ctx.fillRect(boxX, boxY, boxW, boxH);
-  }
+  ctx.beginPath();
+  ctx.arc(x, y, diameter / 2, 0, Math.PI * 2);
+  ctx.fill();
 
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'center';
