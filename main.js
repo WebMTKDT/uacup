@@ -271,7 +271,8 @@ function ajustarEscalaCanvas() {
   if (!canvas) return;
 
   const nuevaAltura = window.innerHeight * CANVAS_HEIGHT_RATIO;
-  const displayW = nuevaAltura * VIEWPORT_ASPECT;
+  const esMovil = window.innerWidth <= 767;
+  const displayW = esMovil ? window.innerWidth : nuevaAltura * VIEWPORT_ASPECT;
 
   canvas.style.height = `${nuevaAltura}px`;
   canvas.style.width = `${displayW}px`;
@@ -825,6 +826,7 @@ function gameLoop(timestamp) {
   if (estadoJuego === 'PLAYING') {
     updateBalon(dt);
     updatePortero(dt);
+    updateFloatPlus(dt);
     checkColisiones();
 
     if (tiempoInicio != null) {

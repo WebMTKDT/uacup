@@ -112,6 +112,26 @@ function setBgmMuted(nextMuted) {
   bgmAudio.muted = muted;
 }
 
+function updateBgmButtonUI() {
+  const btn = $('#btn-mute');
+  if (!btn) return;
+  btn.textContent = muted ? '🔇' : '🎵';
+  btn.setAttribute('aria-pressed', String(muted));
+}
+
+function setBgmVolume(nextVolume) {
+  const normalized = Number.isFinite(nextVolume) ? Math.max(0, Math.min(1, nextVolume)) : 0.35;
+  bgmVolume = normalized;
+  initBgm();
+  if (!bgmAudio) return;
+  bgmAudio.volume = bgmVolume;
+
+  if (bgmVolume > 0 && muted) {
+    setBgmMuted(false);
+  }
+  updateBgmButtonUI();
+}
+
 function playBgm() {
   initBgm();
   if (!bgmAudio) return;
@@ -339,26 +359,19 @@ function bindUI() {
   $('#btn-close-game')?.addEventListener('click', exitToMenu);
   $('#btn-home')?.addEventListener('click', exitToMenu);
 
-  $('#btn-mute')?.addEventListener('click', (e) => {
+  $('#btn-mute')?.addEventListener('click', () => {
     setBgmMuted(!muted);
     showVolumePopover();
-    const btn = e.currentTarget;
-    btn.textContent = muted ? '🔇' : '🎵';
-    btn.setAttribute('aria-pressed', String(muted));
+    updateBgmButtonUI();
   });
 
-  $('#bgm-volume')?.addEventListener('input', (e) => {
+  const onVolumeChange = (e) => {
     const next = Number(e.currentTarget.value);
-    bgmVolume = Number.isFinite(next) ? Math.max(0, Math.min(1, next)) : 0.35;
-    initBgm();
-    if (bgmAudio) bgmAudio.volume = bgmVolume;
-    if (bgmVolume > 0 && muted) {
-      setBgmMuted(false);
-      $('#btn-mute')?.setAttribute('aria-pressed', 'false');
-      if ($('#btn-mute')) $('#btn-mute').textContent = '🎵';
-    }
+    setBgmVolume(next);
     showVolumePopover();
-  });
+  };
+  $('#bgm-volume')?.addEventListener('input', onVolumeChange);
+  $('#bgm-volume')?.addEventListener('change', onVolumeChange);
 
   $('#btn-play-again')?.addEventListener('click', () => {
     $('#end-screen')?.classList.remove('visible', 'slide-in');
@@ -389,6 +402,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const volumeEl = $('#bgm-volume');
   if (volumeEl) volumeEl.value = String(bgmVolume);
+  updateBgmButtonUI();
 
   window.onUACupGameOver = handleGameOver;
 });
