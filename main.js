@@ -38,6 +38,7 @@ const RESET_BALON_MS = 400;
 const FLOAT_PLUS_MS = 1000;
 const GK_CATCH_DISPLAY_MS = 1750;
 const GK_VICTORY_DISPLAY_MS = 1000;
+const BALL_FADE_OUT_MS = 650;
 const FORCE_SCALE = 0.38;
 
 const ASSET_PATHS = {
@@ -99,7 +100,11 @@ const Balon = {
   activo: true,
   enVuelo: false,
   tocoPortero: false,
-  tocoPalo: false
+  tocoPalo: false,
+  opacity: 1,
+  visible: true,
+  fadeActive: false,
+  fadeElapsedMs: 0
 };
 
 const Portero = {
@@ -140,6 +145,7 @@ let primerDisparoHecho = false;
 /** @type {'catch'|'victory'|null} */
 let gkDefeatPhase = null;
 let gkDefeatTimer = 0;
+let ballFadeTimeoutId = null;
 
 // ═══════════════════════════════════════════
 // PRECARGA DE ASSETS
@@ -323,6 +329,10 @@ function resizeCanvas() {
 // ═══════════════════════════════════════════
 
 function resetBalon() {
+  if (ballFadeTimeoutId) {
+    clearTimeout(ballFadeTimeoutId);
+    ballFadeTimeoutId = null;
+  }
   Balon.x = BALL_START_X;
   Balon.y = BALL_START_Y;
   Balon.vx = 0;
@@ -331,6 +341,10 @@ function resetBalon() {
   Balon.enVuelo = false;
   Balon.tocoPortero = false;
   Balon.tocoPalo = false;
+  Balon.opacity = 1;
+  Balon.visible = true;
+  Balon.fadeActive = false;
+  Balon.fadeElapsedMs = 0;
 }
 
 function resetPorteroDificultad() {
@@ -451,6 +465,30 @@ function updateBalon(dt) {
   if (Balon.vx === 0 && Balon.vy === 0 && Balon.y < BALL_START_Y - 20) {
     Balon.enVuelo = false;
   }
+}
+
+function iniciarDesvanecimientoBalon() {
+  if (!Balon.visible || Balon.fadeActive) return;
+
+  Balon.fadeActive = true;
+  Balon.fadeElapsedMs = 0;
+  Balon.opacity = 1;
+
+  if (ballFadeTimeoutId) clearTimeout(ballFadeTimeoutId);
+  ballFadeTimeoutId = setTimeout(() => {
+    Balon.opacity = 0;
+    Balon.visible = false;
+    Balon.fadeActive = false;
+    ballFadeTimeoutId = null;
+  }, BALL_FADE_OUT_MS);
+}
+
+function updateBallFade(dt) {
+  if (!Balon.fadeActive) return;
+
+  Balon.fadeElapsedMs += dt * 1000;
+  const progress = clamp(Balon.fadeElapsedMs / BALL_FADE_OUT_MS, 0, 1);
+  Balon.opacity = 1 - progress;
 }
 
 // ═══════════════════════════════════════════
@@ -654,6 +692,7 @@ function iniciarSecuenciaGameOver(caughtByGk) {
 
   if (caughtByGk) {
     Balon.tocoPortero = true;
+    iniciarDesvanecimientoBalon();
     enterGkPose('catch', true);
     gkDefeatPhase = 'catch';
     gkDefeatTimer = GK_CATCH_DISPLAY_MS;
@@ -789,9 +828,15 @@ function drawPortero() {
 }
 
 function drawBalon() {
+  if (!Balon.visible) return;
+
   const size = BALL_RADIUS * 2;
+  const alpha = clamp(Balon.opacity, 0, 1);
+  if (alpha <= 0) return;
 
   if (GameAssets.balon) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
     ctx.drawImage(
       GameAssets.balon,
       Balon.x - BALL_RADIUS,
@@ -799,9 +844,12 @@ function drawBalon() {
       size,
       size
     );
+    ctx.restore();
     return;
   }
 
+  ctx.save();
+  ctx.globalAlpha = alpha;
   ctx.fillStyle = 'rgba(0,0,0,0.2)';
   ctx.beginPath();
   ctx.ellipse(Balon.x, Balon.y + BALL_RADIUS * 0.6, BALL_RADIUS * 0.85, BALL_RADIUS * 0.35, 0, 0, Math.PI * 2);
@@ -814,6 +862,7 @@ function drawBalon() {
   ctx.arc(Balon.x, Balon.y, BALL_RADIUS, 0, Math.PI * 2);
   ctx.fill();
   ctx.stroke();
+  ctx.restore();
 }
 
 function drawAimLine() {
@@ -897,6 +946,8 @@ function gameLoop(timestamp) {
   if (!lastFrame) lastFrame = timestamp;
   const dt = Math.min((timestamp - lastFrame) / 1000, 0.05);
   lastFrame = timestamp;
+
+  updateBallFade(dt);
 
   if (estadoJuego === 'PLAYING') {
     updateBalon(dt);
