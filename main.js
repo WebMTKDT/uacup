@@ -34,6 +34,8 @@ const EASE_IN_OUT_DESDE_GOL = 12;
 
 const RESET_BALON_MS = 400;
 const FLOAT_PLUS_MS = 1000;
+const GK_CATCH_DISPLAY_MS = 1750;
+const GK_VICTORY_DISPLAY_MS = 1000;
 const FORCE_SCALE = 0.38;
 
 const ASSET_PATHS = {
@@ -71,7 +73,7 @@ let assetsLoadPromise = null;
 // ESTADO GLOBAL
 // ═══════════════════════════════════════════
 
-/** @type {'IDLE'|'PLAYING'|'GOAL_PAUSE'|'GAMEOVER'} */
+/** @type {'IDLE'|'PLAYING'|'GOAL_PAUSE'|'GAMEOVER_ANIM'|'GAMEOVER'} */
 let estadoJuego = 'IDLE';
 
 let tiempoInicio = null;
@@ -131,6 +133,9 @@ let goalResetTimer = 0;
 let floatPlusTimer = 0;
 let showFloatPlus = false;
 let primerDisparoHecho = false;
+/** @type {'catch'|'victory'|null} */
+let gkDefeatPhase = null;
+let gkDefeatTimer = 0;
 
 // ═══════════════════════════════════════════
 // PRECARGA DE ASSETS
@@ -343,6 +348,8 @@ function resetPartida() {
   goalResetTimer = 0;
   floatPlusTimer = 0;
   showFloatPlus = false;
+  gkDefeatPhase = null;
+  gkDefeatTimer = 0;
   resetBalon();
   resetPorteroDificultad();
   actualizarMarcadorUI();
@@ -446,8 +453,8 @@ function updateBalon(dt) {
 // ═══════════════════════════════════════════
 
 function determinarEstadoPortero() {
-  if (estadoJuego === 'GAMEOVER') {
-    return Balon.tocoPortero ? 'catch' : 'victory';
+  if (estadoJuego === 'GAMEOVER_ANIM' || estadoJuego === 'GAMEOVER') {
+    return GkVisuals.currentState;
   }
   if (estadoJuego === 'GOAL_PAUSE' || Portero.fase === 'idle') return 'idle';
 
@@ -538,8 +545,7 @@ function checkColisiones() {
 
   // 2. Colisión con el Portero
   if (aabbOverlap(ball.x, ball.y, ball.w, ball.h, gk.x, gk.y, gk.w, gk.h)) {
-    Balon.tocoPortero = true;
-    triggerGameOver();
+    iniciarSecuenciaGameOver(true);
     return;
   }
 
@@ -615,12 +621,25 @@ function triggerGol() {
   actualizarMarcadorUI();
 }
 
-async function triggerGameOver() {
-  if (estadoJuego === 'GAMEOVER') return;
+function enterGkPose(state, instant = false) {
+  if (GkVisuals.currentState !== state) {
+    GkVisuals.previousState = GkVisuals.currentState;
+    GkVisuals.currentState = state;
+    GkVisuals.transitionAlpha = instant ? 1 : 0;
+  } else if (instant) {
+    GkVisuals.transitionAlpha = 1;
+  }
+}
 
-  estadoJuego = 'GAMEOVER';
+function iniciarSecuenciaGameOver(caughtByGk) {
+  if (estadoJuego === 'GAMEOVER_ANIM' || estadoJuego === 'GAMEOVER') return;
+
+  estadoJuego = 'GAMEOVER_ANIM';
   Balon.enVuelo = false;
   Balon.activo = false;
+  Balon.vx = 0;
+  Balon.vy = 0;
+  Portero.fase = 'idle';
 
   if (tiempoInicio != null) {
     duracionTotal = Date.now() - tiempoInicio;
@@ -628,16 +647,49 @@ async function triggerGameOver() {
     duracionTotal = 0;
   }
 
-  const poseFinal = Balon.tocoPortero ? 'catch' : 'victory';
-  if (GkVisuals.currentState !== poseFinal) {
-    GkVisuals.previousState = GkVisuals.currentState;
-    GkVisuals.currentState = poseFinal;
-    GkVisuals.transitionAlpha = 0;
+  if (caughtByGk) {
+    Balon.tocoPortero = true;
+    enterGkPose('catch', true);
+    gkDefeatPhase = 'catch';
+    gkDefeatTimer = GK_CATCH_DISPLAY_MS;
+    return;
   }
 
-  const finalScore = { goles: racha, duracion_ms: duracionTotal };
+  enterGkPose('victory', true);
+  gkDefeatPhase = 'victory';
+  gkDefeatTimer = GK_VICTORY_DISPLAY_MS;
+}
 
+function updateGameOverSequence(dt) {
+  updateGkVisuals(dt);
+  gkDefeatTimer -= dt * 1000;
+  if (gkDefeatTimer > 0) return;
+
+  if (gkDefeatPhase === 'catch') {
+    enterGkPose('victory', false);
+    gkDefeatPhase = 'victory';
+    gkDefeatTimer = GK_VICTORY_DISPLAY_MS;
+    return;
+  }
+
+  if (gkDefeatPhase === 'victory') {
+    finalizarGameOver();
+  }
+}
+
+function finalizarGameOver() {
+  if (estadoJuego === 'GAMEOVER') return;
+
+  estadoJuego = 'GAMEOVER';
+  gkDefeatPhase = null;
+  gkDefeatTimer = 0;
+
+  const finalScore = { goles: racha, duracion_ms: duracionTotal };
   mostrarPantallaFinal(finalScore);
+}
+
+function triggerGameOver() {
+  iniciarSecuenciaGameOver(false);
 }
 
 function mostrarPantallaFinal(score) {
@@ -846,6 +898,8 @@ function gameLoop(timestamp) {
       resetBalon();
       estadoJuego = 'PLAYING';
     }
+  } else if (estadoJuego === 'GAMEOVER_ANIM') {
+    updateGameOverSequence(dt);
   } else if (estadoJuego === 'GAMEOVER') {
     updateGkVisuals(dt);
   }
